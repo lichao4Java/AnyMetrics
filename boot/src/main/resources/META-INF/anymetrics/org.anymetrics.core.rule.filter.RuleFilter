@@ -1,0 +1,2 @@
+el=org.anymetrics.support.filter.springEL.ELRuleFilter
+regular=org.anymetrics.support.filter.regular.RegularRuleFilter

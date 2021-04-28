@@ -1,0 +1,3 @@
+kafka=org.anymetrics.support.datasource.kafka.KafkaDataSource
+mysql=org.anymetrics.support.datasource.mysql.MySQLDataSource
+simpleHTTP=org.anymetrics.support.datasource.http.SimpleHTTPDataSource

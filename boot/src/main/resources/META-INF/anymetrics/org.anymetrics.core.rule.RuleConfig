@@ -1,0 +1,2 @@
+stream=org.anymetrics.core.rule.UnboundedRuleConfig
+schedule=org.anymetrics.core.rule.BoundedRuleConfig

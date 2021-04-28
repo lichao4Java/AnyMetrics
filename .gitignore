@@ -1,0 +1,10 @@
+*.svn
+target/
+.project
+.classpath
+.project
+.settings/
+.DS_Store
+*.iml
+.idea
+console-ui/node_modules
