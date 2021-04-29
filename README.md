@@ -1,0 +1,294 @@
+# 介绍
+
+
+AnyMetrics - 声明式的 Metrics 采集与监控系统，可以对结构化与非结构化、有界数据与无界数据进行采集，通过对采集数据进行提取、过滤、逻辑运算等处理后将结果存储流行的监控系统或存储引擎中（如 Prometheus、ES）从而搭建起完整的监控体系，同时结合 grafana 完成数据的可视化
+
+
+数据的采集、提取、过滤、存储等均以配置的方式驱动，无需额外的开发，对应到 AnyMetrics 中分别是对数据源、收集规则、收集器进行配置，基于这些配置 AnyMetrics 会以管道的方式自动完成从数据采集到数据存储的全部工作
+
+对于有界数据的任务，AnyMetrics 会以固定的频率从数据源中拉取数据，AnyMetrics 中内置了 MySQL 类型的有数据源，对于无界数据的任务，AnyMetrics 会以一个时间窗口为时间单位从数据源中批量拉取数据，AnyMetrics 中内置了 Kafka 类型的无界数据源
+
+AnyMetrics 的数据源可以是任何系统，比如可以把 HTTP 请求结果当作数据源、也可以把 ES 的检索结果当作数据源
+
+通过对数据源的原始数据进行提取和过滤可以完成从非结构数据变成结构化数据的目的，AnyMetrics 中内置了正则表达式和 Spring EL 表达式2种收集规则（Filter），通过正则表达式可以完成对数据的提取和过滤，使用 Spring EL 表达式可以完成对原始数据和正则表达式提取之后的数据进行的逻辑运算等操作，Filter 可以单独使用，也可以组合起来使用，AnyMetrics 会将所有 Filter 以 FilterChain 的方式依次执行
+
+当对数据完成了提取和过滤后，下一步就需要将数据按照指定的方式存储到目标系统中，AnyMetrics 中内置了 Prometheus 收集器，通过定义 Metrics ，可以将数据推送到 Prometheus 的 PushGateway 中
+
+AnyMetrics 的收集器可以将数据推送到任何系统，比如 MySQL、ES 甚至推送给一个 WebHook
+
+
+不论是在收集规则配置还是收集器配置中，均可以使用变量配置，来完成动态配置的替换，变量数据来源于正则表达式 Filter，通过定义如 _(.*)_ 方式可以得到名为 _$1_ 的变量，在有 Spring EL 的地方可以使用 _#$1_ 来使用变量，在其它地方可以使用 _$1_ 方式使用变量，这样就满足从数据提取到数据的再次组装或者运算操作，具体什么配置可以支持变量或者 Spring EL 表达式取决于收集规则和收集器的具体实现，AnyMetrics 内置的 Spring EL Filter 中的 expression 配置以及 Prometheus 收集器中的 value 配置均支持 Spring EL 表达式以及变量(_#$1_)、Prometheus 收集器中的 labels 配置支持变量(_$1_)
+
+AnyMetrics 采用插件式的设计方式，不论是数据源、收集规则还是收集器均可以实现拓展，即时是 AnyMetrics 中以及内置的插件也是采用对等的方式实现的，加载和使用什么插件完全取决与声明的配置
+
+
+# 架构
+![image.png](https://cdn.nlark.com/yuque/0/2021/png/2721112/1615949546641-6ed0c472-896d-4963-8556-bcbb8c8cd616.png#align=left&display=inline&height=555&margin=%5Bobject%20Object%5D&name=image.png&originHeight=1109&originWidth=2868&size=304892&status=done&style=none&width=1434)
+
+
+# 技术栈
+
+```text
+SpringBoot + Nacos + Vue + ElementUI
+```
+
+# 启动
+
+```jshelllanguage
+1 mvn clean package
+2 cd boot/target
+3 java -Dnacos.address=nacos.dev.office:8848 -Dnacos.config.dataId=AnyMetricsConfig -Dnacos.config.group=config.app.AnyMetrics -Dauto=true -jar AnyMetrics-boot.jar 
+```
+
+配置说明
+```text
+通过 nacos.address 参数指定nacos地址
+通过 nacos.config.dataId 参数指定配置在nacos的dataId，默认值为 AnyMetricsConfig
+通过 Dnacos.config.group 参数指定配置在nacos的group，默认值为 DEFAULT
+通过 auto 参数控制任务是否自启动，默认值为 false
+
+```
+
+
+# 如何配置
+
+
+#### 1、选择任务类型
+![image.png](https://cdn.nlark.com/yuque/0/2021/png/2721112/1617951484308-fcd7e0e7-b1aa-4bba-b70b-1342191e25ad.png#align=left&display=inline&height=137&margin=%5Bobject%20Object%5D&name=image.png&originHeight=274&originWidth=997&size=43508&status=done&style=none&width=498.5)
+
+
+#### 2.1、有界数据
+![image.png](https://cdn.nlark.com/yuque/0/2021/png/2721112/1617951614839-9029547c-d2b2-44f0-98d6-e6e4928ef59f.png#align=left&display=inline&height=113&margin=%5Bobject%20Object%5D&name=image.png&originHeight=226&originWidth=956&size=30549&status=done&style=none&width=478)
+选择调度间隔，单位：秒
+
+
+#### 2.2、选择数据源
+![image.png](https://cdn.nlark.com/yuque/0/2021/png/2721112/1617951834449-a51bf368-313e-4a56-9571-75f1a7e05739.png#align=left&display=inline&height=237&margin=%5Bobject%20Object%5D&name=image.png&originHeight=474&originWidth=952&size=63456&status=done&style=none&width=476)
+选择数据源为 mysql（目前仅支持了 mysql），并完善相关配置
+
+#### 3.1、无界数据 
+![image.png](https://cdn.nlark.com/yuque/0/2021/png/2721112/1617952270270-1715d904-ecdb-4df6-881b-3f74fdc84995.png#align=left&display=inline&height=115&margin=%5Bobject%20Object%5D&name=image.png&originHeight=229&originWidth=947&size=28775&status=done&style=none&width=473.5)
+输入时间窗口，单位：秒
+
+
+#### 3.2、选择数据源
+![image.png](https://cdn.nlark.com/yuque/0/2021/png/2721112/1617952381630-8163f131-2881-40c3-9dea-30528c8d6eef.png#align=left&display=inline&height=231&margin=%5Bobject%20Object%5D&name=image.png&originHeight=461&originWidth=942&size=59421&status=done&style=none&width=471)
+选择 kafka 为数据源（目前仅支持了 kafka ），并完善相关配置
+
+#### 4、收集规则
+![image.png](https://cdn.nlark.com/yuque/0/2021/png/2721112/1617951879269-09971972-2180-42ab-9fc7-90a99755ef52.png#align=left&display=inline&height=172&margin=%5Bobject%20Object%5D&name=image.png&originHeight=344&originWidth=911&size=34698&status=done&style=none&width=455.5)
+filters 支持 regular 和 el 2种类型，在 regular 中使用括号的方式提取需要的变量，多个变量以 $1、$2 ... $N 的方式命名，在 el 中可以使用 _#$1 _变量用来做运算
+
+#### 5、收集器
+![image.png](https://cdn.nlark.com/yuque/0/2021/png/2721112/1617951752709-3e3435fe-c32b-4a4f-a5aa-f0c6e7e7f123.png#align=left&display=inline&height=194&margin=%5Bobject%20Object%5D&name=image.png&originHeight=388&originWidth=929&size=59857&status=done&style=none&width=464.5)
+选择 prometheus（目前仅支持了prometheus）并完善 metrics 相关配置信息，type 支持 gauge、counter、histogram 类型，labels 支持 _$1_ 变量，value 支持 Spring EL 表达式变量运算
+
+# 运行任务
+
+
+#### 1、启动任务
+![image.png](https://cdn.nlark.com/yuque/0/2021/png/2721112/1617952567166-98673705-ee2f-45e4-b5ee-3ad40f2b71e7.png#align=left&display=inline&height=124&margin=%5Bobject%20Object%5D&name=image.png&originHeight=249&originWidth=978&size=78281&status=done&style=none&width=489)
+点击 Start 按钮启动任务
+
+
+#### 2、查看运行日志
+![image.png](https://cdn.nlark.com/yuque/0/2021/png/2721112/1617952605437-13e9c4fc-d674-4d5c-b149-66e1fca91dab.png#align=left&display=inline&height=278&margin=%5Bobject%20Object%5D&name=image.png&originHeight=555&originWidth=1663&size=530397&status=done&style=none&width=831.5)
+点击 Logs Tab 查询任务运行日志
+
+
+#### 3、iframe
+![image.png](https://cdn.nlark.com/yuque/0/2021/png/2721112/1617952631265-65f2e27b-ac4c-4759-a8a8-368318cb64aa.png#align=left&display=inline&height=470&margin=%5Bobject%20Object%5D&name=image.png&originHeight=940&originWidth=1665&size=477750&status=done&style=none&width=832.5)
+点击 iframe Tab 可以把外部系统嵌入到任务中
+
+
+#### 4、停止任务
+![image.png](https://cdn.nlark.com/yuque/0/2021/png/2721112/1617952679321-9115bdb0-0a77-4f46-895d-01338dfa2b36.png#align=left&display=inline&height=141&margin=%5Bobject%20Object%5D&name=image.png&originHeight=282&originWidth=1672&size=96063&status=done&style=none&width=836)
+点击 Stop 按钮停止任务
+
+
+
+
+# 示例
+
+
+## 例1：收集所有的执行时间超过3秒的慢链路并配置报警策略
+
+
+#### 1、设置kafka为数据源，从kafka中读取trace日志
+```java
+{
+    groupId:"anymetrics_apm_slow_trace"
+    kafkaAddress:"192.168.0.250:9092"
+    topic:"p_bigtracer_metric_log"
+    type:"kafka"
+}
+```
+#### 
+#### 2、设置收集规则
+
+
+trace 日志是结构化的数据，如：
+```json
+1617953102329,operation-admin-web,10.8.60.41,RESOURCE_MYSQL_LOG,com.yxy.operation.dao.IHotBroadcastEpisodesDao.getNeedOnlineList,1,1,0,0,1
+```
+因此第一步采用正则对数据进行提取、过滤，对应的正则为：
+```json
+(.*?),(.*?),(.*?),(.*?),(.*?),(.*?),(.*?),(.*?),(.*?),(.*?)
+```
+提取后的数据为：
+```json
+{
+  "$4":"RESOURCE_MYSQL_LOG",
+  "$5":"com.yxy.operation.dao.IHotBroadcastEpisodesDao.getNeedOnlineList",
+  "$6":"1",
+  "$7":"1",
+  "$10":"1",
+  "$8":"0",
+  "$9":"0",
+  "$1":"1617953102329",
+  "$2":"operation-admin-web",
+  "$3":"10.8.60.41"
+}
+```
+得到了10个变量，从$1 到 $10，因为只收集3秒以上的链路数据，因此还需要定一个逻辑运算表达式，对应的 EL 表达式为：
+```json
+(new java.lang.Double(#$10) / #$6) > 3000
+```
+其中 #$10 是链路的总响应时间，#$6 是接口的总调用次数， 得到平均 RT，然后通过  运算过滤出慢链路
+
+
+根据上面的2种收集规则得到完整的配置为：
+```json
+{
+    "timeWindow": 40,
+    "kind": "stream",
+    "filters": [
+        {
+            "expression": "(.*?)\u0001,(.*?)\u0001,(.*?)\u0001,(.*?)\u0001,(.*?)\u0001,(.*?)\u0001,(.*?)\u0001,(.*?)\u0001,(.*?)\u0001,(.*?)\n",
+            "type": "regular"
+        },
+        {
+            "expression": "(new java.lang.Double(#$10) / #$6) > 3000",
+            "type": "el"
+        }
+    ]
+}
+```
+
+
+#### 3、设置收集器
+把数据收集到 promethus 中
+```json
+{
+    "pushGateway": "192.168.8.64:9091",
+    "metrics": [
+        {
+            "help": "anymetrics_apm_slow_trace",
+            "labelNames": [
+                "application",
+                "type",
+                "endpoint"
+            ],
+            "name": "anymetrics_apm_slow_trace",
+            "type": "gauge",
+            "value": "new java.lang.Double(#$10) / #$6",
+            "labels": [
+                "$2",
+                "$4",
+                "$5"
+            ]
+        }
+    ],
+    "type": "prometheus",
+    "job": "anymetrics_apm_slow_trace"
+}
+```
+需要定义 promethus 的 metrics，名称是 anymetrics_apm_slow_trace，类型为 gauge，lableNames 使用 application、type、endpoint，分别对应变量 $2、$4、$5，因为收集的是响应时间RT，因此 value 为  ，其中 #$10 是链路的总响应时间，#$6 是接口的总调用次数， 得到平均 RT
+
+
+#### 4、配置告警与可视化
+
+
+**4.1 可视化**
+
+
+打开 Grafana，创建一个 Panel，选择数据源为 promethus，图标类型为 Graph，在 Metrics 中输入 PromQL 语法 anymetrics_apm_slow_trace{}
+![image.png](https://cdn.nlark.com/yuque/0/2021/png/2721112/1617954126307-5599eeec-3fa3-4f6c-bb88-47a80f682506.png#align=left&display=inline&height=360&margin=%5Bobject%20Object%5D&name=image.png&originHeight=720&originWidth=1477&size=255202&status=done&style=none&width=738.5)
+关于 PromQL 可以参考 [https://www.cnblogs.com/kevincaptain/p/10508628.html](https://www.cnblogs.com/kevincaptain/p/10508628.html)
+
+**4.2 配置Grafana告警**
+
+
+在 Panel 中选择 Alert Tab，定义告警规则，如：
+![image.png](https://cdn.nlark.com/yuque/0/2021/png/2721112/1617954216042-a1422f93-69d2-4fb0-bf96-6fe1064924ab.png#align=left&display=inline&height=248&margin=%5Bobject%20Object%5D&name=image.png&originHeight=496&originWidth=1508&size=138575&status=done&style=none&width=754)
+
+
+**Evaluate every 1m For 1m**
+第一个 1m 表示以1分钟的频率检查是否满足报警条件
+第二个 1m 表示满足 Conditions 时报警状态先从 OK 变为 Pending，此时还不会触发报警，但 Pending 状态会持续 1分钟，在 Pending 状态时，如果下次检查依再次满足条件，则触发报警
+
+
+**Conditions**
+设置 Max() OF query(A,5m,now) IS ABOVE 3000 表示对比过去5分钟内最高的值是否超过了3000
+
+
+**NoData & Error Handing**
+用来设置获取数据超时或者没有数据时需不需要触发报警
+
+
+**Notifications**
+配置 Send to 报警渠道，可以是钉钉，Email等
+
+
+
+
+## 例2：可视化展示注册用户总数
+
+
+#### 1、设置mysql为数据源，根据sql查询用户总数
+```json
+{
+    "password": "xxx",
+    "jdbcurl": "jdbc:mysql://mysql_yxy_platform_order_m.dev.office:3306/yxy_usercenter",
+    "type": "mysql",
+    "sql": "select count(1) from yxy_usercenter.member",
+    "username": "root"
+}
+```
+#### 2、设置收集规则
+根据 sql 查询出来的结果，提取出 count(1)，使用正则表达式收集规则：
+```json
+{
+    "kind": "schedule",
+    "interval": 5,
+    "filters": [
+        {
+            "expression": "\\{\\\"count\\(1\\)\\\":(.*)\\}",
+            "type": "regular"
+        }
+    ]
+}
+```
+#### 3、设置收集器
+把数据收集到 promethus 中
+```json
+{
+    "pushGateway": "192.168.8.64:9091",
+    "metrics": [
+        {
+            "help": "anymetrics_member_count",
+            "name": "anymetrics_member_count",
+            "type": "gauge",
+            "value": "#$1"
+        }
+    ],
+    "type": "prometheus",
+    "job": "anymetrics_member_count"
+}
+```
+需要定义 promethus 的 metrics，名称是 anymetrics_member_count，类型为 gauge，因为只需要收集用户总数，因此不需要定义lables和labelNames，value 为 #$1
+
+
+#### 4、配置可视化
+打开 Grafana，创建一个 Panel，选择数据源为 promethus，图标类型为 Graph，在 Metrics 中输入 PromQL 语法 anymetrics_member_count{}
+![image.png](https://cdn.nlark.com/yuque/0/2021/png/2721112/1617956071530-0f9f3542-2c10-4087-abbc-4d1553ac7ab9.png#align=left&display=inline&height=351&margin=%5Bobject%20Object%5D&name=image.png&originHeight=702&originWidth=1492&size=235404&status=done&style=none&width=746)
