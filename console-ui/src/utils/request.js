@@ -18,4 +18,50 @@ const service = axios.create({
 
 })
 
+
+// request拦截器
+service.interceptors.request.use(
+  config => {
+    return config
+  },
+  error => {
+    Promise.reject(error)
+  }
+)
+
+// 响应拦截器
+service.interceptors.response.use(response => {
+    let type = response.headers['content-type']
+    const res = response.data
+    if (res.code !== 1) {
+      if (res.code === 0) {
+        Message({
+          message: '' + res.message,
+          type: 'error',
+          duration: 2 * 1000
+        })
+      } else {
+        Message({
+          message: '' + res.message,
+          type: 'warning',
+          duration: 2 * 1000
+        })
+      }
+      return Promise.reject('error')
+    } else {
+      return response.data
+    }
+  },
+  error => {
+    console.log('err' + error)
+    Message({
+      message: error.message,
+      type: 'error',
+      duration: 5 * 1000
+    })
+    return Promise.reject(error)
+  }
+)
+
+
 export default service

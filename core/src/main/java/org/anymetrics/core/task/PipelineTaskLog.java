@@ -3,14 +3,16 @@ package org.anymetrics.core.task;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-public class PipelineTaskLog {
+public class PipelineTaskLog implements Serializable {
 
     private static final Logger logger = LoggerFactory.getLogger("PipelineTaskLog");
+    private static final long serialVersionUID = -2073424698752121062L;
 
     private String taskName;
 
@@ -34,4 +36,19 @@ public class PipelineTaskLog {
         logs.add(String.format("%s - %s", new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date(System.currentTimeMillis())), log));
     }
 
+    public String getTaskName() {
+        return taskName;
+    }
+
+    public void setTaskName(String taskName) {
+        this.taskName = taskName;
+    }
+
+    public List<String> getLogs() {
+        return logs;
+    }
+
+    public void setLogs(List<String> logs) {
+        this.logs = logs;
+    }
 }

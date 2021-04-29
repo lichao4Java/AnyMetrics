@@ -5,9 +5,11 @@ import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.stereotype.Component;
 
 @SpringBootApplication
+@ComponentScan(value = "org.anymetrics")
 public class BootApplication {
 
     public static void main(String[] args) {
@@ -20,6 +22,10 @@ class StartTaskRunner implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
-        PipelineTaskManage.start();
+
+        String auto = System.getProperty("auto");
+        if(auto != null) {
+            PipelineTaskManage.start();
+        }
     }
 }
