@@ -334,7 +334,7 @@ schedule : `
         {
             "expression":"#$1 == #$1",
             "type":"el"
-        },
+        }
     ]
 }
 `
