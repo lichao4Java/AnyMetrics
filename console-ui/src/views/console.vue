@@ -319,7 +319,7 @@ export default {
         {
             "expression":"#$1 == #$1",
             "type":"el"
-        },
+        }
     ]
 }`,
 schedule : `

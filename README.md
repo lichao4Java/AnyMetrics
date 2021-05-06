@@ -1,5 +1,6 @@
 # 介绍
 
+![image.png](./README-imgs/logo.png)
 
 AnyMetrics - 声明式的 Metrics 采集与监控系统，可以对结构化与非结构化、有界数据与无界数据进行采集，通过对采集数据进行提取、过滤、逻辑运算等处理后将结果存储流行的监控系统或存储引擎中（如 Prometheus、ES）从而搭建起完整的监控体系，同时结合 grafana 完成数据的可视化
 
@@ -23,7 +24,7 @@ AnyMetrics 采用插件式的设计方式，不论是数据源、收集规则还
 
 
 # 架构
-![image.png](https://cdn.nlark.com/yuque/0/2021/png/2721112/1615949546641-6ed0c472-896d-4963-8556-bcbb8c8cd616.png#align=left&display=inline&height=555&margin=%5Bobject%20Object%5D&name=image.png&originHeight=1109&originWidth=2868&size=304892&status=done&style=none&width=1434)
+![image.png](./README-imgs/image%20(5).png)
 
 
 # 技术栈
@@ -37,14 +38,14 @@ SpringBoot + Nacos + Vue + ElementUI
 ```jshelllanguage
 1 mvn clean package
 2 cd boot/target
-3 java -Dnacos.address=nacos.dev.office:8848 -Dnacos.config.dataId=AnyMetricsConfig -Dnacos.config.group=config.app.AnyMetrics -Dauto=true -jar AnyMetrics-boot.jar 
+3 java -Dnacos.address=nacos.ip:8848 -Dnacos.config.dataId=AnyMetricsConfig -Dnacos.config.group=config.app.AnyMetrics -Dauto=true -jar AnyMetrics-boot.jar 
 ```
 
-配置说明
+启动参数说明
 ```text
 通过 nacos.address 参数指定nacos地址
 通过 nacos.config.dataId 参数指定配置在nacos的dataId，默认值为 AnyMetricsConfig
-通过 Dnacos.config.group 参数指定配置在nacos的group，默认值为 DEFAULT
+通过 nacos.config.group 参数指定配置在nacos的group，默认值为 DEFAULT
 通过 auto 参数控制任务是否自启动，默认值为 false
 
 ```
@@ -54,55 +55,55 @@ SpringBoot + Nacos + Vue + ElementUI
 
 
 #### 1、选择任务类型
-![image.png](https://cdn.nlark.com/yuque/0/2021/png/2721112/1617951484308-fcd7e0e7-b1aa-4bba-b70b-1342191e25ad.png#align=left&display=inline&height=137&margin=%5Bobject%20Object%5D&name=image.png&originHeight=274&originWidth=997&size=43508&status=done&style=none&width=498.5)
+![image.png](./README-imgs/image%20(6).png)
 
 
 #### 2.1、有界数据
-![image.png](https://cdn.nlark.com/yuque/0/2021/png/2721112/1617951614839-9029547c-d2b2-44f0-98d6-e6e4928ef59f.png#align=left&display=inline&height=113&margin=%5Bobject%20Object%5D&name=image.png&originHeight=226&originWidth=956&size=30549&status=done&style=none&width=478)
+![image.png](./README-imgs/image%20(7).png)
 选择调度间隔，单位：秒
 
 
 #### 2.2、选择数据源
-![image.png](https://cdn.nlark.com/yuque/0/2021/png/2721112/1617951834449-a51bf368-313e-4a56-9571-75f1a7e05739.png#align=left&display=inline&height=237&margin=%5Bobject%20Object%5D&name=image.png&originHeight=474&originWidth=952&size=63456&status=done&style=none&width=476)
+![image.png](./README-imgs/image%20(8).png)
 选择数据源为 mysql（目前仅支持了 mysql），并完善相关配置
 
 #### 3.1、无界数据 
-![image.png](https://cdn.nlark.com/yuque/0/2021/png/2721112/1617952270270-1715d904-ecdb-4df6-881b-3f74fdc84995.png#align=left&display=inline&height=115&margin=%5Bobject%20Object%5D&name=image.png&originHeight=229&originWidth=947&size=28775&status=done&style=none&width=473.5)
+![image.png](./README-imgs/image%20(9).png)
 输入时间窗口，单位：秒
 
 
 #### 3.2、选择数据源
-![image.png](https://cdn.nlark.com/yuque/0/2021/png/2721112/1617952381630-8163f131-2881-40c3-9dea-30528c8d6eef.png#align=left&display=inline&height=231&margin=%5Bobject%20Object%5D&name=image.png&originHeight=461&originWidth=942&size=59421&status=done&style=none&width=471)
+![image.png](./README-imgs/image%20(10).png)
 选择 kafka 为数据源（目前仅支持了 kafka ），并完善相关配置
 
 #### 4、收集规则
-![image.png](https://cdn.nlark.com/yuque/0/2021/png/2721112/1617951879269-09971972-2180-42ab-9fc7-90a99755ef52.png#align=left&display=inline&height=172&margin=%5Bobject%20Object%5D&name=image.png&originHeight=344&originWidth=911&size=34698&status=done&style=none&width=455.5)
+![image.png](./README-imgs/image%20(11).png)
 filters 支持 regular 和 el 2种类型，在 regular 中使用括号的方式提取需要的变量，多个变量以 $1、$2 ... $N 的方式命名，在 el 中可以使用 _#$1 _变量用来做运算
 
 #### 5、收集器
-![image.png](https://cdn.nlark.com/yuque/0/2021/png/2721112/1617951752709-3e3435fe-c32b-4a4f-a5aa-f0c6e7e7f123.png#align=left&display=inline&height=194&margin=%5Bobject%20Object%5D&name=image.png&originHeight=388&originWidth=929&size=59857&status=done&style=none&width=464.5)
+![image.png](./README-imgs/image%20(12).png)
 选择 prometheus（目前仅支持了prometheus）并完善 metrics 相关配置信息，type 支持 gauge、counter、histogram 类型，labels 支持 _$1_ 变量，value 支持 Spring EL 表达式变量运算
 
 # 运行任务
 
 
 #### 1、启动任务
-![image.png](https://cdn.nlark.com/yuque/0/2021/png/2721112/1617952567166-98673705-ee2f-45e4-b5ee-3ad40f2b71e7.png#align=left&display=inline&height=124&margin=%5Bobject%20Object%5D&name=image.png&originHeight=249&originWidth=978&size=78281&status=done&style=none&width=489)
+![image.png](./README-imgs/image%20(13).png)
 点击 Start 按钮启动任务
 
 
 #### 2、查看运行日志
-![image.png](https://cdn.nlark.com/yuque/0/2021/png/2721112/1617952605437-13e9c4fc-d674-4d5c-b149-66e1fca91dab.png#align=left&display=inline&height=278&margin=%5Bobject%20Object%5D&name=image.png&originHeight=555&originWidth=1663&size=530397&status=done&style=none&width=831.5)
+![image.png](./README-imgs/image%20(14).png)
 点击 Logs Tab 查询任务运行日志
 
 
 #### 3、iframe
-![image.png](https://cdn.nlark.com/yuque/0/2021/png/2721112/1617952631265-65f2e27b-ac4c-4759-a8a8-368318cb64aa.png#align=left&display=inline&height=470&margin=%5Bobject%20Object%5D&name=image.png&originHeight=940&originWidth=1665&size=477750&status=done&style=none&width=832.5)
+![image.png](./README-imgs/image%20(15).png)
 点击 iframe Tab 可以把外部系统嵌入到任务中
 
 
 #### 4、停止任务
-![image.png](https://cdn.nlark.com/yuque/0/2021/png/2721112/1617952679321-9115bdb0-0a77-4f46-895d-01338dfa2b36.png#align=left&display=inline&height=141&margin=%5Bobject%20Object%5D&name=image.png&originHeight=282&originWidth=1672&size=96063&status=done&style=none&width=836)
+![image.png](./README-imgs/image%20(16).png)
 点击 Stop 按钮停止任务
 
 
@@ -118,7 +119,7 @@ filters 支持 regular 和 el 2种类型，在 regular 中使用括号的方式�
 ```java
 {
     groupId:"anymetrics_apm_slow_trace"
-    kafkaAddress:"192.168.0.250:9092"
+    kafkaAddress:"192.168.0.1:9092"
     topic:"p_bigtracer_metric_log"
     type:"kafka"
 }
@@ -180,7 +181,7 @@ trace 日志是结构化的数据，如：
 把数据收集到 promethus 中
 ```json
 {
-    "pushGateway": "192.168.8.64:9091",
+    "pushGateway": "192.168.0.1:9091",
     "metrics": [
         {
             "help": "anymetrics_apm_slow_trace",
@@ -213,14 +214,14 @@ trace 日志是结构化的数据，如：
 
 
 打开 Grafana，创建一个 Panel，选择数据源为 promethus，图标类型为 Graph，在 Metrics 中输入 PromQL 语法 anymetrics_apm_slow_trace{}
-![image.png](https://cdn.nlark.com/yuque/0/2021/png/2721112/1617954126307-5599eeec-3fa3-4f6c-bb88-47a80f682506.png#align=left&display=inline&height=360&margin=%5Bobject%20Object%5D&name=image.png&originHeight=720&originWidth=1477&size=255202&status=done&style=none&width=738.5)
+![image.png](./README-imgs/image%20(17).png)
 关于 PromQL 可以参考 [https://www.cnblogs.com/kevincaptain/p/10508628.html](https://www.cnblogs.com/kevincaptain/p/10508628.html)
 
 **4.2 配置Grafana告警**
 
 
 在 Panel 中选择 Alert Tab，定义告警规则，如：
-![image.png](https://cdn.nlark.com/yuque/0/2021/png/2721112/1617954216042-a1422f93-69d2-4fb0-bf96-6fe1064924ab.png#align=left&display=inline&height=248&margin=%5Bobject%20Object%5D&name=image.png&originHeight=496&originWidth=1508&size=138575&status=done&style=none&width=754)
+![image.png](./README-imgs/image%20(18).png)
 
 
 **Evaluate every 1m For 1m**
@@ -248,8 +249,8 @@ trace 日志是结构化的数据，如：
 #### 1、设置mysql为数据源，根据sql查询用户总数
 ```json
 {
-    "password": "xxx",
-    "jdbcurl": "jdbc:mysql://mysql_yxy_platform_order_m.dev.office:3306/yxy_usercenter",
+    "password": "root",
+    "jdbcurl": "jdbc:mysql://192.168.0.1.dev.office:3306/yxy_usercenter",
     "type": "mysql",
     "sql": "select count(1) from yxy_usercenter.member",
     "username": "root"
@@ -273,7 +274,7 @@ trace 日志是结构化的数据，如：
 把数据收集到 promethus 中
 ```json
 {
-    "pushGateway": "192.168.8.64:9091",
+    "pushGateway": "192.168.0.1:9091",
     "metrics": [
         {
             "help": "anymetrics_member_count",
@@ -291,4 +292,4 @@ trace 日志是结构化的数据，如：
 
 #### 4、配置可视化
 打开 Grafana，创建一个 Panel，选择数据源为 promethus，图标类型为 Graph，在 Metrics 中输入 PromQL 语法 anymetrics_member_count{}
-![image.png](https://cdn.nlark.com/yuque/0/2021/png/2721112/1617956071530-0f9f3542-2c10-4087-abbc-4d1553ac7ab9.png#align=left&display=inline&height=351&margin=%5Bobject%20Object%5D&name=image.png&originHeight=702&originWidth=1492&size=235404&status=done&style=none&width=746)
+![image.png](./README-imgs/image%20(19).png)

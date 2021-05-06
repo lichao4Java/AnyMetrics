@@ -182,8 +182,13 @@ public class AnyMetricsController  {
         JSONObject newTask = JSONObject.parseObject(newTaskJsonConfig);
         newTask.put("id", UUID.randomUUID().toString());
 
+        JSONArray jsonArray;
         String configsStr = ConfigTaskManage.getConfigsStr();
-        JSONArray jsonArray = JSONArray.parseArray(configsStr);
+        if(configsStr == null) {
+            jsonArray = new JSONArray();
+        } else {
+            jsonArray = JSONArray.parseArray(configsStr);
+        }
         //add
         jsonArray.add(newTask);
 
