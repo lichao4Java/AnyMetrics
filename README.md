@@ -305,17 +305,17 @@ filters 支持 regular 和 el 2种类型，在 regular 中使用括号的方式�
 
 # Q&A
 
-## 系统中接口的 APM 相关日志如何采集?
-#### 如果系统中有调用链追踪系统，可以使用使用调用链日志，或者是通过定义拦截器对目标方法进行日志打印，定义好日志格式，可以直接按行打印，或者在内存中聚合后按固定频率打印，日志一般包含RT 延时、error/success 次数、endpoint、application 等关键数据
+### 系统中接口的 APM 相关日志如何采集?
+**如果系统中有调用链追踪系统，可以使用使用调用链日志，或者是通过定义拦截器对目标方法进行日志打印，定义好日志格式，可以直接按行打印，或者在内存中聚合后按固定频率打印，日志一般包含RT 延时、error/success 次数、endpoint、application 等关键数据**
 
 
 ## 日志如何收集到 kafka？
-### 可以使用 filebeat 将 nginx 的 access_log、tomcat 的应用日志收集到 kafka
+**可以使用 filebeat 将 nginx 的 access_log、tomcat 的应用日志收集到 kafka**
 
 
-## 目前支持了哪些数据源？
-#### 有界数据目前支持 mysql、http；无界数据目前支持 kafka
+### 目前支持了哪些数据源？
+**有界数据目前支持 mysql、http；无界数据目前支持 kafka**
 
 
-## 目前支持了哪些收集器？
-#### 目前仅支持 prometheus，使用 push-gateway 方式将数据推送到 prometheus 中
+### 目前支持了哪些收集器？
+**目前仅支持 prometheus，使用 push-gateway 方式将数据推送到 prometheus 中**
