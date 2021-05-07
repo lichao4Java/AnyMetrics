@@ -2,7 +2,7 @@
 
 ![image.png](./README-imgs/logo.png)
 
-AnyMetrics - 声明式的 Metrics 采集与监控系统，可以对结构化与非结构化、有界数据与无界数据进行采集，通过对采集数据进行提取、过滤、逻辑运算等处理后将结果存储流行的监控系统或存储引擎中（如 Prometheus、ES）从而搭建起完整的监控体系，同时结合 grafana 完成数据的可视化
+AnyMetrics - 面向开发人员、声明式的 Metrics 采集与监控系统，可以对结构化与非结构化、有界数据与无界数据进行采集，通过对采集数据进行提取、过滤、逻辑运算等处理后将结果存储流行的监控系统或存储引擎中（如 Prometheus、ES）从而搭建起完整的监控体系，同时结合 grafana 完成数据的可视化
 
 
 数据的采集、提取、过滤、存储等均以配置的方式驱动，无需额外的开发，对应到 AnyMetrics 中分别是对数据源、收集规则、收集器进行配置，基于这些配置 AnyMetrics 会以管道的方式自动完成从数据采集到数据存储的全部工作
@@ -114,7 +114,6 @@ filters 支持 regular 和 el 2种类型，在 regular 中使用括号的方式�
 
 ## 例1：收集所有的执行时间超过3秒的慢链路并配置报警策略
 
-
 #### 1、设置kafka为数据源，从kafka中读取trace日志
 ```java
 {
@@ -128,7 +127,7 @@ filters 支持 regular 和 el 2种类型，在 regular 中使用括号的方式�
 #### 2、设置收集规则
 
 
-trace 日志是结构化的数据，如：
+调用日志是结构化的数据，如：
 ```json
 1617953102329,operation-admin-web,10.8.60.41,RESOURCE_MYSQL_LOG,com.yxy.operation.dao.IHotBroadcastEpisodesDao.getNeedOnlineList,1,1,0,0,1
 ```
@@ -151,11 +150,11 @@ trace 日志是结构化的数据，如：
   "$3":"10.8.60.41"
 }
 ```
-得到了10个变量，从$1 到 $10，因为只收集3秒以上的链路数据，因此还需要定一个逻辑运算表达式，对应的 EL 表达式为：
+得到了10个变量，从$1 到 $10，由于监控的是超过3秒的慢链路，因此我们只需要收集 RT 超过3秒的日志数据，所以需要定一个逻辑运算表达式 Filter，对应的 EL 表达式为：
 ```json
 (new java.lang.Double(#$10) / #$6) > 3000
 ```
-其中 #$10 是链路的总响应时间，#$6 是接口的总调用次数， 得到平均 RT，然后通过  运算过滤出慢链路
+其中 #$10 是链路的总响应时间，#$6 是接口的总调用次数， 先通过 #$10 / #$6 运算得到平均 RT，然后通过 (#$10 / #$6) > 3000 过滤出3秒以上的慢链路数据
 
 
 根据上面的2种收集规则得到完整的配置为：
@@ -204,7 +203,9 @@ trace 日志是结构化的数据，如：
     "job": "anymetrics_apm_slow_trace"
 }
 ```
-需要定义 promethus 的 metrics，名称是 anymetrics_apm_slow_trace，类型为 gauge，lableNames 使用 application、type、endpoint，分别对应变量 $2、$4、$5，因为收集的是响应时间RT，因此 value 为  ，其中 #$10 是链路的总响应时间，#$6 是接口的总调用次数， 得到平均 RT
+需要定义 promethus 的 metrics，名称是 anymetrics_apm_slow_trace，类型为 gauge，lableNames 使用 application、type、endpoint，分别对应变量 $2、$4、$5，因为收集的是响应时间RT，因此 value 为 #$10 / #$6
+
+其中 #$10 是链路的总响应时间，#$6 是接口的总调用次数，通过 #$10 / #$6 运算得到平均 RT
 
 
 #### 4、配置告警与可视化
@@ -293,3 +294,18 @@ trace 日志是结构化的数据，如：
 #### 4、配置可视化
 打开 Grafana，创建一个 Panel，选择数据源为 promethus，图标类型为 Graph，在 Metrics 中输入 PromQL 语法 anymetrics_member_count{}
 ![image.png](./README-imgs/image%20(19).png)
+
+
+# Q&A
+
+## 系统中接口的 APM 相关日志如何采集?
+#### 如果系统中有调用链追踪系统，可以使用使用调用链日志，或者是通过定义拦截器对目标方法进行日志打印，定义好日志格式，可以直接按行打印，或者在内存中聚合后按固定频率打印，日志一般包含RT 延时、error/success 次数、endpoint、application 等关键数据
+
+## 日志如何收集到 kafka？
+### 可以使用 filebeat 将 nginx 的 access_log、tomcat 的应用日志收集到 kafka
+
+## 目前支持了哪些数据源？
+#### 有界数据目前支持 mysql、http；无界数据目前支持 kafka
+
+## 目前支持了哪些收集器？
+#### 目前仅支持 prometheus，使用 push-gateway 方式将数据推送到 prometheus 中
