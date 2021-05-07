@@ -35,6 +35,22 @@ SpringBoot + Nacos + Vue + ElementUI
 
 # 启动
 
+**启动之前需要安装用到的依赖**
+
+
+**安装 nacos（必选）**
+
+https://nacos.io/zh-cn/docs/quick-start.html
+
+**安装 prometheus（可选）**
+
+https://github.com/prometheus/prometheus
+
+**安装 pushgateway（可选）**
+
+https://github.com/prometheus/pushgateway
+
+**启动 AnyMeitris**
 ```jshelllanguage
 1 mvn clean package
 2 cd boot/target
@@ -49,6 +65,7 @@ SpringBoot + Nacos + Vue + ElementUI
 通过 auto 参数控制任务是否自启动，默认值为 false
 
 ```
+启动后访问 http://localhost:8080/index.html
 
 
 # 如何配置
@@ -99,7 +116,7 @@ filters 支持 regular 和 el 2种类型，在 regular 中使用括号的方式�
 
 #### 3、iframe
 ![image.png](./README-imgs/image%20(15).png)
-点击 iframe Tab 可以把外部系统嵌入到任务中
+点击 iframe Tab 可以把外部系统嵌入到任务中，如将 grafana 的 dashboard 链接嵌入到系统中展示
 
 
 #### 4、停止任务
@@ -115,12 +132,12 @@ filters 支持 regular 和 el 2种类型，在 regular 中使用括号的方式�
 ## 例1：APM监控 - 采集所有的执行时间超过3秒的慢链路并配置报警策略
 
 #### 1、设置kafka为数据源，从kafka中读取trace日志
-```java
+```json
 {
-    groupId:"anymetrics_apm_slow_trace"
-    kafkaAddress:"192.168.0.1:9092"
-    topic:"p_bigtracer_metric_log"
-    type:"kafka"
+    "groupId":"anymetrics_apm_slow_trace",
+    "kafkaAddress":"192.168.0.1:9092",
+    "topic":"p_bigtracer_metric_log",
+    "type":"kafka"
 }
 ```
 #### 
@@ -301,6 +318,117 @@ filters 支持 regular 和 el 2种类型，在 regular 中使用括号的方式�
 #### 4、配置可视化
 打开 Grafana，创建一个 Panel，选择数据源为 promethus，图标类型为 Graph，在 Metrics 中输入 PromQL 语法 anymetrics_member_count{}
 ![image.png](./README-imgs/image%20(19).png)
+
+
+## 例3：Nginx 日志监控
+
+#### Nginx请求延时监控、Nginx状态码监控
+
+#### 1、设置kafka为数据源，消费nginx的access_log日志
+```json
+{
+    "groupId":"anymetrics_nginx",
+    "kafkaAddress":"192.168.0.1:9092",
+    "topic":"nginx_access_log",
+    "type":"kafka"
+}
+```
+
+#### 2、设置收集规则
+假设nginx的log_format配置如下：
+```json
+log_format  main  '"$http_x_forwarded_for" $remote_addr - $remote_user [$time_local] $http_host "$request" ' '$status $body_bytes_sent "$http_referer" ' '"$http_user_agent" $upstream_addr $request_method $upstream_status $upstream_response_time';
+```
+因此第一步采用正则Filter对数据进行提取、过滤，对应的正则为：
+
+```json
+(.*?)\\s+(.*?)\\s+-(.*?)\\s+\\[(.*?)\\]\\s+(.*?)\\s+\\\"(.*?)\\s+(.*?)\\s+(.*?)\\s+\\\"?(\\d+)\\s+(\\d+)\\s\\\"(.*?)\\\"\\s+\\\"(.*?)\\\"\\s+(.*?)\\s+(.*?)\\s+(\\d+)\\s+(.*)",
+```
+
+提取后的数据为：
+
+```json
+$1:"-"
+$2:192.168.198.17
+$3: -
+$4:13/Apr/2021:10:48:14 +0800
+$5:dev.api.com
+$6:POST
+$7:/yxy-api-gateway/api/json/yuandouActivity/access
+$8:HTTP/1.1"
+$9:200
+$10:87
+$11:http://192.168.0.1:8100/yxy-edu-web/coursetrialTemp?id=123
+$12:Mozilla/5.0 (iPhone; CPU iPhone OS 13_4_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko)Mobile/15E148 MicroMessenger/7.0.11(0x17000b21)NetType/WIFI Language/zh_CN
+$13:10.8.43.18:8080
+$14:POST
+$15:200
+$16:0.005
+```
+一共得到了16个变量，对照log_format我们可以分别知道每个变量的含义
+
+完整收集规则配置为：
+```json
+{
+    "timeWindow": 30,
+    "kind": "stream",
+    "filters": [
+        {
+            "expression": "(.*?)\\s+(.*?)\\s+-(.*?)\\s+\\[(.*?)\\]\\s+(.*?)\\s+\\\"(.*?)\\s+(.*?)\\s+(.*?)\\s+\\\"?(\\d+)\\s+(\\d+)\\s\\\"(.*?)\\\"\\s+\\\"(.*?)\\\"\\s+(.*?)\\s+(.*?)\\s+(\\d+)\\s+(.*)",
+            "type": "regular"
+        }
+    ]
+}
+```
+
+#### 3、设置收集器
+收集每个请求响应时间以及请求的状态码，并把数据存储到 promethus 中
+
+```json
+{
+    "pushGateway": "192.168.0.1:9091",
+    "metrics": [
+        {
+            "help": "nginx_log_host_status",
+            "labelNames": [
+                "host",
+                "status"
+            ],
+            "name": "nginx_log_host_status",
+            "type": "gauge",
+            "value": "1",
+            "labels": [
+                "$5",
+                "$9"
+            ]
+        },
+        {
+            "help": "nginx_log_req_rt (seconds)",
+            "labelNames": [
+                "host",
+                "endpoint"
+            ],
+            "name": "nginx_log_req_rt",
+            "type": "gauge",
+            "value": "new java.lang.Double(#$16)",
+            "labels": [
+                "$5",
+                "$7"
+            ]
+        }
+    ],
+    "type": "prometheus",
+    "job": "anymetrics_nginx_log"
+}
+```
+#### 4、配置可视化
+1 Nginx状态码监控，打开 Grafana，创建一个 Panel，选择数据源为 promethus，图标类型为 Graph，在 Metrics 中输入 PromQL 语法 nginx_log_host_status{}
+![image.png](./README-imgs/image%20(21).png)
+
+2 Nginx请求延时监控，打开 Grafana，创建一个 Panel，选择数据源为 promethus，图标类型为 Graph，在 Metrics 中输入 PromQL 语法 nginx_log_req_rt{}
+![image.png](./README-imgs/image%20(22).png)
+
+
 
 
 # Q&A
