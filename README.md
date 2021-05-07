@@ -112,7 +112,7 @@ filters 支持 regular 和 el 2种类型，在 regular 中使用括号的方式�
 # 示例
 
 
-## 例1：收集所有的执行时间超过3秒的慢链路并配置报警策略
+## 例1：APM监控 - 采集所有的执行时间超过3秒的慢链路并配置报警策略
 
 #### 1、设置kafka为数据源，从kafka中读取trace日志
 ```java
@@ -242,6 +242,13 @@ filters 支持 regular 和 el 2种类型，在 regular 中使用括号的方式�
 配置 Send to 报警渠道，可以是钉钉，Email等
 
 
+**一个比较完整的 APM 监控组合如下：**
+
+通过对调用链日志采集不同维度的 metrics 完成链路RT、项目错误数、项目平均RT、链路RT分布 等多维度的监控
+
+![image.png](./README-imgs/image%20(20).png)
+
+
 
 
 ## 例2：可视化展示注册用户总数
@@ -301,11 +308,14 @@ filters 支持 regular 和 el 2种类型，在 regular 中使用括号的方式�
 ## 系统中接口的 APM 相关日志如何采集?
 #### 如果系统中有调用链追踪系统，可以使用使用调用链日志，或者是通过定义拦截器对目标方法进行日志打印，定义好日志格式，可以直接按行打印，或者在内存中聚合后按固定频率打印，日志一般包含RT 延时、error/success 次数、endpoint、application 等关键数据
 
+
 ## 日志如何收集到 kafka？
 ### 可以使用 filebeat 将 nginx 的 access_log、tomcat 的应用日志收集到 kafka
 
+
 ## 目前支持了哪些数据源？
 #### 有界数据目前支持 mysql、http；无界数据目前支持 kafka
+
 
 ## 目前支持了哪些收集器？
 #### 目前仅支持 prometheus，使用 push-gateway 方式将数据推送到 prometheus 中
