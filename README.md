@@ -422,10 +422,14 @@ $16:0.005
 }
 ```
 #### 4、配置可视化
-1 Nginx状态码监控，打开 Grafana，创建一个 Panel，选择数据源为 promethus，图标类型为 Graph，在 Metrics 中输入 PromQL 语法 nginx_log_host_status{}
+##### Nginx状态码监控
+
+打开 Grafana，创建一个 Panel，选择数据源为 promethus，图标类型为 Graph，在 Metrics 中输入 PromQL 语法 nginx_log_host_status{}
 ![image.png](./README-imgs/image%20(21).png)
 
-2 Nginx请求延时监控，打开 Grafana，创建一个 Panel，选择数据源为 promethus，图标类型为 Graph，在 Metrics 中输入 PromQL 语法 nginx_log_req_rt{}
+##### Nginx请求延时监控
+
+打开 Grafana，创建一个 Panel，选择数据源为 promethus，图标类型为 Graph，在 Metrics 中输入 PromQL 语法 nginx_log_req_rt{}
 ![image.png](./README-imgs/image%20(22).png)
 
 
@@ -433,7 +437,7 @@ $16:0.005
 
 # Q&A
 
-## 系统中接口的 APM 相关日志如何采集?
+## 如何采集 APM 日志?
 **如果系统中有调用链追踪系统，可以使用使用调用链日志，或者是通过定义拦截器对目标方法进行日志打印，定义好日志格式，可以直接按行打印，或者在内存中聚合后按固定频率打印，日志一般包含RT 延时、error/success 次数、endpoint、application 等关键数据**
 
 
@@ -444,6 +448,8 @@ $16:0.005
 ## 目前支持了哪些数据源？
 **有界数据目前支持 mysql、http；无界数据目前支持 kafka**
 
-
 ## 目前支持了哪些收集器？
-**目前仅支持 prometheus，使用 push-gateway 方式将数据推送到 prometheus 中**
+**目前仅支持 prometheus，使用 pushgateway 方式将数据推送到 prometheus 中**
+
+## 已经使用了 Skywalking、Zipkin 这类调用链追踪系统还需要使用 AnyMetrics 吗？
+**2者不冲突，调用链追踪系统是收集链路的调用关系和 APM 指标数据，AnyMetrics 不光可以使用结构化的调用链追踪系统的指标日志作为数据源来监控系统，同时也可以将应用系统中非结构化的日志作为数据源来监控系统运行情况，如监控一些 Exception 事件，也可以对数据库的表数据进行可视化展示或者监控，同时 AnyMetrics 支持跨平台系统，任何系统产生的日志都可以作为数据源用于监控系统运行情况**
