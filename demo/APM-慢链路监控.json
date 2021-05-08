@@ -1,0 +1,35 @@
+[{
+	"name": "APM - 慢链路监控",
+	"rule": {
+		"timeWindow": 40,
+		"kind": "stream",
+		"filters": [{
+			"expression": "(.*?)\u0001,(.*?)\u0001,(.*?)\u0001,(.*?)\u0001,(.*?)\u0001,(.*?)\u0001,(.*?)\u0001,(.*?)\u0001,(.*?)\u0001,(.*?)\n",
+			"type": "regular"
+		}, {
+			"expression": "(new java.lang.Double(#$10) / #$6) > 3000",
+			"type": "el"
+		}]
+	},
+	"id": "3",
+	"iframe": "http://192.168.0.1:3000/d/ykks7UlGz/anymetrics-trace-apmjian-kong?orgId=1",
+	"dataSource": {
+		"groupId": "anymetrics_apm_slow_trace",
+		"kafkaAddress": "192.168.0.1:9092",
+		"topic": "p_bigtracer_metric_log",
+		"type": "kafka"
+	},
+	"collector": {
+		"pushGateway": "192.168.0.1:9091",
+		"metrics": [{
+			"help": "anymetrics_apm_slow_trace",
+			"labelNames": ["application", "type", "endpoint"],
+			"name": "anymetrics_apm_slow_trace",
+			"type": "gauge",
+			"value": "new java.lang.Double(#$10) / #$6",
+			"labels": ["$2", "$4", "$5"]
+		}],
+		"type": "prometheus",
+		"job": "anymetrics_apm_slow_trace"
+	}
+}]

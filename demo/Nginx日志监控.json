@@ -1,0 +1,39 @@
+[{
+  "name": "Nginx - 日志监控",
+  "rule": {
+    "timeWindow": 30,
+    "kind": "stream",
+    "filters": [{
+      "expression": "(.*?)\\s+(.*?)\\s+-(.*?)\\s+\\[(.*?)\\]\\s+(.*?)\\s+\\\"(.*?)\\s+(.*?)\\s+(.*?)\\s+\\\"?(\\d+)\\s+(\\d+)\\s\\\"(.*?)\\\"\\s+\\\"(.*?)\\\"\\s+(.*?)\\s+(.*?)\\s+(\\d+)\\s+(.*)",
+      "type": "regular"
+    }]
+  },
+  "id": "8838e28d-2e74-41de-94ba-e0909eb90985",
+  "iframe": "http://192.168.0.1:3000/d/YHcCpSXGk/anymetrics-nginx-ri-zhi-jian-kong?orgId=1&from=now-30m&to=now",
+  "dataSource": {
+    "groupId": "anymetrics_nginx_log",
+    "kafkaAddress": "192.168.0.1:9092",
+    "topic": "nginx",
+    "type": "kafka"
+  },
+  "collector": {
+    "pushGateway": "192.168.0.1:9091",
+    "metrics": [{
+      "help": "nginx_log_host_status",
+      "labelNames": ["host", "status"],
+      "name": "nginx_log_host_status",
+      "type": "gauge",
+      "value": "1",
+      "labels": ["$5", "$9"]
+    }, {
+      "help": "nginx_log_req_rt (seconds)",
+      "labelNames": ["host", "endpoint"],
+      "name": "nginx_log_req_rt",
+      "type": "gauge",
+      "value": "new java.lang.Double(#$16)",
+      "labels": ["$5", "$7"]
+    }],
+    "type": "prometheus",
+    "job": "anymetrics_nginx_log"
+  }
+}]

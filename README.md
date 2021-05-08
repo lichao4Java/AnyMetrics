@@ -277,9 +277,9 @@ filters 支持 regular 和 el 2种类型，在 regular 中使用括号的方式�
 ```json
 {
     "password": "root",
-    "jdbcurl": "jdbc:mysql://192.168.0.1.dev.office:3306/yxy_usercenter",
+    "jdbcurl": "jdbc:mysql://192.168.0.1:3306/user",
     "type": "mysql",
-    "sql": "select count(1) from yxy_usercenter.member",
+    "sql": "select count(1) from user",
     "username": "root"
 }
 ```
@@ -435,6 +435,13 @@ $16:0.005
 ![image.png](./README-imgs/image%20(22).png)
 
 
+### 完整的demo配置如下
+
+[APM-慢链路监控](./demo/APM-慢链路监控.json)
+
+[APM-Nginx日志监控](./demo/Nginx日志监控.json)
+
+[APM-可视化展示用户总数](./demo/可视化展示用户总数.json)
 
 
 # Q&A

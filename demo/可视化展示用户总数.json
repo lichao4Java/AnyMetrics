@@ -1,0 +1,31 @@
+[{
+  "name": "可视化展示注册用户总数",
+  "rule": {
+    "kind": "schedule",
+    "interval": 5,
+    "filters": [{
+      "expression": "\\{\\\"count\\(1\\)\\\":(.*)\\}",
+      "type": "regular"
+    }]
+  },
+  "id": "2",
+  "iframe": "http://192.168.0.1:3000/d/gc-mNU_Mk/anymetrics-sqljian-kong?orgId=1",
+  "dataSource": {
+    "password": "root",
+    "jdbcurl": "jdbc:mysql://120.0.0.1:3306/user",
+    "type": "mysql",
+    "sql": "select count(1) from user",
+    "username": "root"
+  },
+  "collector": {
+    "pushGateway": "192.168.0.1:9091",
+    "metrics": [{
+      "help": "anymetrics_member_count",
+      "name": "anymetrics_member_count",
+      "type": "gauge",
+      "value": "#$1"
+    }],
+    "type": "prometheus",
+    "job": "anymetrics_member_count"
+  }
+}]
