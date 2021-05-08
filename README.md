@@ -24,7 +24,7 @@ AnyMetrics 采用插件式的设计方式，不论是数据源、收集规则还
 
 
 # 架构
-![image.png](./README-imgs/image%20(5).png)
+![image.png](./README-imgs/image%20(5).jpg)
 
 
 # 技术栈
