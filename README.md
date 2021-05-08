@@ -33,7 +33,7 @@ AnyMetrics 采用插件式的设计方式，不论是数据源、收集规则还
 SpringBoot + Nacos + Vue + ElementUI
 ```
 
-# 启动
+# 安装
 
 **启动之前需要安装用到的依赖**
 
@@ -49,6 +49,8 @@ https://github.com/prometheus/prometheus
 **安装 pushgateway（可选）**
 
 https://github.com/prometheus/pushgateway
+
+# 启动
 
 **启动 AnyMeitris**
 ```jshelllanguage
