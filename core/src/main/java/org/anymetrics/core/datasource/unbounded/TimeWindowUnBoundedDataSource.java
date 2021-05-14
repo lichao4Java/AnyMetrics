@@ -26,6 +26,8 @@ public abstract class TimeWindowUnBoundedDataSource<T extends DataSourceConfig, 
 
     private static AtomicInteger threadCounter = new AtomicInteger();
 
+    private static final int nThreads = Runtime.getRuntime().availableProcessors();
+
     private ExecutorService bossExecutorService = newBossExecutorService();
 
     private ExecutorService newBossExecutorService() {
@@ -42,8 +44,9 @@ public abstract class TimeWindowUnBoundedDataSource<T extends DataSourceConfig, 
 
     private ExecutorService workExecutorService = newWorkExecutorService();
 
+
     private ExecutorService newWorkExecutorService() {
-        return Executors.newFixedThreadPool(6, new ThreadFactory() {
+        return Executors.newFixedThreadPool(nThreads, new ThreadFactory() {
 
             @Override
             public Thread newThread(Runnable r) {
