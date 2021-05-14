@@ -39,9 +39,20 @@ public class PrometheusCollector extends Collector<PrometheusCollectorConfig> {
         PipelineTaskContext context = PipelineTaskContext.getContext();
         context.getLog().trace("PrometheusCollector start collect");
 
-        CollectorRegistry registry  = new CollectorRegistry();
+        PrometheusCollectorConfig collectorConfig = getCollectorConfig();
 
-        List<PrometheusMetricsConfig> metricsConfigs = getCollectorConfig().getMetrics();
+        if(collectorConfig == null) {
+            context.getLog().trace("PrometheusCollector missing config");
+            return;
+        }
+        List<PrometheusMetricsConfig> metricsConfigs = collectorConfig.getMetrics();
+
+        if(metricsConfigs == null) {
+            context.getLog().trace("PrometheusCollector missing mertrics");
+            return;
+        }
+
+        CollectorRegistry registry  = new CollectorRegistry();
         Counter counter = null;
         Gauge gauge = null;
         Histogram histogram = null;

@@ -50,7 +50,7 @@ public class PipelineTaskManage {
      *  重新加载任务
      * @param newTaskJsonConfig
      */
-    public static PipelineTask reloadTask(String newTaskJsonConfig) {
+    public static PipelineTask reloadTask(String newTaskJsonConfig, boolean start) {
 
         // 1 load new ConfigTask
         ConfigTask newConfigTask = ConfigTaskManage.loadConfigTask(newTaskJsonConfig);
@@ -71,9 +71,13 @@ public class PipelineTaskManage {
         // 3 convert to PipelineTask
         PipelineTask newPipelineTask = toPipelineTask(newConfigTask);
 
-        // 4 start task
-        newPipelineTask.start();
         tasks.add(newPipelineTask);
+
+        if(start) {
+            // 4 start task
+            newPipelineTask.start();
+        }
+
         return newPipelineTask;
 
     }
@@ -82,7 +86,7 @@ public class PipelineTaskManage {
      * 创建新任务
      * @param newTaskJsonConfig
      */
-    public static PipelineTask loadNewTask(String newTaskJsonConfig) {
+    public static PipelineTask loadNewTask(String newTaskJsonConfig, boolean start) {
 
         // 1 load new ConfigTask
         ConfigTask newConfigTask = ConfigTaskManage.loadConfigTask(newTaskJsonConfig);
@@ -99,9 +103,12 @@ public class PipelineTaskManage {
         // 2 convert to PipelineTask
         PipelineTask newPipelineTask = toPipelineTask(newConfigTask);
 
-        // 3 start task
-        newPipelineTask.start();
         tasks.add(newPipelineTask);
+
+        if(start) {
+            // 3 start task
+            newPipelineTask.start();
+        }
         return newPipelineTask;
     }
 

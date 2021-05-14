@@ -51,7 +51,8 @@ public class AnyMetricsController  {
     @RequestMapping(value = "/addTask")
     public Object addTask(String newTaskJsonConfig) {
         try {
-            addTaskConfig(newTaskJsonConfig);
+            JSONObject jsonObject = addTaskConfig(newTaskJsonConfig);
+            PipelineTaskManage.loadNewTask(jsonObject.toJSONString(), false);
         } catch(Exception e) {
             e.printStackTrace();
             return MR.error(e.getMessage());
@@ -70,7 +71,7 @@ public class AnyMetricsController  {
         try {
             JSONObject jsonObject = addTaskConfig(newTaskJsonConfig);
 
-            PipelineTaskManage.loadNewTask(jsonObject.toJSONString());
+            PipelineTaskManage.loadNewTask(jsonObject.toJSONString(), true);
         } catch(Exception e) {
             e.printStackTrace();
             return MR.error(e.getMessage());
@@ -107,7 +108,7 @@ public class AnyMetricsController  {
 
             updateTaskConfig(newTaskJsonConfig);
 
-            PipelineTaskManage.reloadTask(newTaskJsonConfig);
+            PipelineTaskManage.reloadTask(newTaskJsonConfig, true);
 
         } catch(Exception e) {
             e.printStackTrace();
@@ -206,7 +207,7 @@ public class AnyMetricsController  {
     @RequestMapping(value = "/reloadTask")
     public Object reloadTask(String newTaskJsonConfig) {
         try {
-            PipelineTaskManage.reloadTask(newTaskJsonConfig);
+            PipelineTaskManage.reloadTask(newTaskJsonConfig, true);
         } catch(Exception e) {
             e.printStackTrace();
             return MR.error(e.getMessage());
