@@ -20,7 +20,7 @@ public class PipelineTaskLog implements Serializable {
         this.taskName = taskName;
     }
 
-    private static final int MAX_LOGS = 1000;
+    private static final int MAX_LOGS = 100;
 
     private List<String> logs = new ArrayList<>(MAX_LOGS);
 

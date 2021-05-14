@@ -90,6 +90,8 @@ public class AnyMetricsController  {
 
             updateTaskConfig(newTaskJsonConfig);
 
+            PipelineTaskManage.reloadTask(newTaskJsonConfig, false);
+
         } catch(Exception e) {
             e.printStackTrace();
             return MR.error(e.getMessage());

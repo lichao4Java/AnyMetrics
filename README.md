@@ -11,14 +11,27 @@ AnyMetrics - 面向开发人员、声明式的 Metrics 采集与监控系统，�
 
 AnyMetrics 的数据源可以是任何系统，比如可以把 HTTP 请求结果当作数据源、也可以把 ES 的检索结果当作数据源
 
-通过对数据源的原始数据进行提取和过滤可以完成从非结构数据变成结构化数据的目的，AnyMetrics 中内置了正则表达式和 Spring EL 表达式2种收集规则（Filter），通过正则表达式可以完成对数据的提取和过滤，使用 Spring EL 表达式可以完成对原始数据和正则表达式提取之后的数据进行的逻辑运算等操作，Filter 可以单独使用，也可以组合起来使用，AnyMetrics 会将所有 Filter 以 FilterChain 的方式依次执行
+通过对数据源的原始数据进行提取和过滤可以完成从非结构数据变成结构化数据的目的，AnyMetrics 中内置了JSON、正则表达式和 Spring EL 表达式3种收集规则（Filter）
+
+- 通过JSON Filter可以完成对JSON数据格式的提取和过滤
+- 通过Regular Filter可以完成对数据的提取和过滤
+- 通过Spring EL Filter可以完成对原始数据和和以上Filter的处理之后的数据进行的逻辑运算等操作
+
+Filter 可以单独使用，也可以组合起来使用，AnyMetrics 会将所有 Filter 以 FilterChain 的方式依次执行
 
 当对数据完成了提取和过滤后，下一步就需要将数据按照指定的方式存储到目标系统中，AnyMetrics 中内置了 Prometheus 收集器，通过定义 Metrics ，可以将数据推送到 Prometheus 的 PushGateway 中
 
 AnyMetrics 的收集器可以将数据推送到任何系统，比如 MySQL、ES 甚至推送给一个 WebHook
 
 
-不论是在收集规则配置还是收集器配置中，均可以使用变量配置，来完成动态配置的替换，变量数据来源于正则表达式 Filter，通过定义如 _(.*)_ 方式可以得到名为 _$1_ 的变量，在有 Spring EL 的地方可以使用 _#$1_ 来使用变量，在其它地方可以使用 _$1_ 方式使用变量，这样就满足从数据提取到数据的再次组装或者运算操作，具体什么配置可以支持变量或者 Spring EL 表达式取决于收集规则和收集器的具体实现，AnyMetrics 内置的 Spring EL Filter 中的 expression 配置以及 Prometheus 收集器中的 value 配置均支持 Spring EL 表达式以及变量(_#$1_)、Prometheus 收集器中的 labels 配置支持变量(_$1_)
+不论是在收集规则配置还是收集器配置中，均可以使用变量配置，来完成动态配置的替换，变量数据来源于正则表达式 Filter
+
+- 在正则表达式Filter中通过定义如 _(.*)_ 方式可以得到名为 _$1_ 的变量
+- 在JSON Filter中会将 _key_ 作为变量名，如数据格式为 {'id' : 1}的一条数据，经过处理后会产生 变量名为 _id_ ,变量值为 _1_ 的变量
+- 在需要使用Spring EL表达式的地方可以使用 _#$1_ 来使用变量
+- 在其它Filter或者收集器的地方可以使用 _key_ 、 _$1_ 等变量
+
+这样就满足从数据提取到数据的再次组装或者运算操作，具体什么配置可以支持变量或者 Spring EL 表达式取决于收集规则和收集器的具体实现，AnyMetrics 内置的 Spring EL Filter 中的 expression 配置以及 Prometheus 收集器中的 value 配置均支持 Spring EL 表达式以及变量(_#key_)、Prometheus 收集器中的 labels 配置支持变量(_key_)
 
 AnyMetrics 采用插件式的设计方式，不论是数据源、收集规则还是收集器均可以实现拓展，即时是 AnyMetrics 中以及内置的插件也是采用对等的方式实现的，加载和使用什么插件完全取决与声明的配置
 
