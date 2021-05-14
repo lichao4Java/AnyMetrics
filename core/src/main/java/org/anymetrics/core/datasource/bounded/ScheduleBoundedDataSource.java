@@ -16,25 +16,35 @@ public abstract class ScheduleBoundedDataSource<T extends DataSourceConfig, E ex
 
     private static AtomicInteger threadCounter = new AtomicInteger();
 
-    private ScheduledExecutorService scheduledExecutor = Executors.newSingleThreadScheduledExecutor(new ThreadFactory(){
-        @Override
-        public Thread newThread(Runnable r) {
-            Thread thread = new Thread(r);
-            thread.setName("AnyMetrics-Schedule-Thread-" + threadCounter.getAndIncrement());
-            return thread;
-        }
-    });
+    private ScheduledExecutorService scheduledExecutor = newScheduledExecutorService();
+
+    private ScheduledExecutorService newScheduledExecutorService() {
+        return Executors.newSingleThreadScheduledExecutor(new ThreadFactory(){
+            @Override
+            public Thread newThread(Runnable r) {
+                Thread thread = new Thread(r);
+                thread.setName("AnyMetrics-Schedule-Thread-" + threadCounter.getAndIncrement());
+                return thread;
+            }
+        });
+    }
 
     @Override
     public void destory() {
 
-        scheduledExecutor.shutdown();
+        try {
+            scheduledExecutor.shutdown();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         // shutdownNow after 10 seconds
         try {
-            if(!scheduledExecutor.awaitTermination(10, TimeUnit.SECONDS)) {
+            while(!scheduledExecutor.awaitTermination(10, TimeUnit.SECONDS)) {
                 scheduledExecutor.shutdownNow();
             }
+
+            scheduledExecutor = newScheduledExecutorService();
         } catch (InterruptedException e) {
             e.printStackTrace();
         }

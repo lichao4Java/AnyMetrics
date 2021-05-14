@@ -26,26 +26,33 @@ public abstract class TimeWindowUnBoundedDataSource<T extends DataSourceConfig, 
 
     private static AtomicInteger threadCounter = new AtomicInteger();
 
-    private ExecutorService bossExecutorService = Executors.newSingleThreadExecutor(new ThreadFactory() {
+    private ExecutorService bossExecutorService = newBossExecutorService();
 
-        @Override
-        public Thread newThread(Runnable r) {
-            Thread thread = new Thread(r);
-            thread.setName("AnyMetrics-TimeWindow-Consumer-Boss" + threadCounter.getAndIncrement());
-            return thread;
-        }
-    });
+    private ExecutorService newBossExecutorService() {
+        return Executors.newSingleThreadExecutor(new ThreadFactory() {
 
+            @Override
+            public Thread newThread(Runnable r) {
+                Thread thread = new Thread(r);
+                thread.setName("AnyMetrics-TimeWindow-Consumer-Boss" + threadCounter.getAndIncrement());
+                return thread;
+            }
+        });
+    }
 
-    private ExecutorService workExecutorService = Executors.newCachedThreadPool(new ThreadFactory() {
+    private ExecutorService workExecutorService = newWorkExecutorService();
 
-        @Override
-        public Thread newThread(Runnable r) {
-            Thread thread = new Thread(r);
-            thread.setName("AnyMetrics-TimeWindow-Consumer-Work" + threadCounter.getAndIncrement());
-            return thread;
-        }
-    });
+    private ExecutorService newWorkExecutorService() {
+        return Executors.newFixedThreadPool(6, new ThreadFactory() {
+
+            @Override
+            public Thread newThread(Runnable r) {
+                Thread thread = new Thread(r);
+                thread.setName("AnyMetrics-TimeWindow-Consumer-Work" + threadCounter.getAndIncrement());
+                return thread;
+            }
+        });
+    }
 
     @Override
     public void connect() {
@@ -56,18 +63,23 @@ public abstract class TimeWindowUnBoundedDataSource<T extends DataSourceConfig, 
 
         running.set(false);
 
-        // shutdown
-        bossExecutorService.shutdown();
-        workExecutorService.shutdown();
 
-        // shutdownNow after 10 seconds
         try {
-            if(!bossExecutorService.awaitTermination(10, TimeUnit.SECONDS)) {
+            // shutdown
+            bossExecutorService.shutdown();
+            workExecutorService.shutdown();
+
+            // shutdownNow after 10 seconds
+
+            while(!bossExecutorService.awaitTermination(10, TimeUnit.SECONDS)) {
                 bossExecutorService.shutdownNow();
             }
-            if(!workExecutorService.awaitTermination(10, TimeUnit.SECONDS)) {
+            bossExecutorService = newBossExecutorService();
+
+            while(!workExecutorService.awaitTermination(10, TimeUnit.SECONDS)) {
                 workExecutorService.shutdownNow();
             }
+            workExecutorService = newWorkExecutorService();
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -90,6 +102,8 @@ public abstract class TimeWindowUnBoundedDataSource<T extends DataSourceConfig, 
 
         PipelineTaskContext context = PipelineTaskContext.getContext();
 
+        running.set(true);
+
         bossExecutorService.submit(new Runnable() {
             @Override
             public void run() {
@@ -98,8 +112,6 @@ public abstract class TimeWindowUnBoundedDataSource<T extends DataSourceConfig, 
 
                 // seconds
                 Integer timeWindow = ruleConfig.getTimeWindow();
-
-                running.set(true);
 
                 // init
                 long startOfMillis = System.currentTimeMillis();
