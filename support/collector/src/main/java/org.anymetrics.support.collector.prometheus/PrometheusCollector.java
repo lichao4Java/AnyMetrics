@@ -106,6 +106,10 @@ public class PrometheusCollector extends Collector<PrometheusCollectorConfig> {
                 context.getLog().trace("prometheusCollector source values : " + metricsConfig.getValue() + " target values : " + value);
 
             }
+
+            counter = null;
+            gauge = null;
+            histogram = null;
         }
 
         try {
