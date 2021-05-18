@@ -57,8 +57,6 @@ public class PrometheusCollector extends Collector<PrometheusCollectorConfig> {
         Gauge gauge = null;
         Histogram histogram = null;
 
-        boolean needPush = false;
-
         for(PrometheusMetricsConfig metricsConfig : metricsConfigs) {
 
             String labelNames[] = metricsConfig.getLabelNames() == null ? new String[]{} : metricsConfig.getLabelNames();
@@ -90,15 +88,12 @@ public class PrometheusCollector extends Collector<PrometheusCollectorConfig> {
                 Object value = getValue(metricsConfig, fetchData);
                 if(counter != null) {
                     counter.labels(labels).inc(Double.valueOf(String.valueOf(value)));
-                    needPush = true;
                 }
                 if(gauge != null) {
                     gauge.labels(labels).inc(Double.valueOf(String.valueOf(value)));
-                    needPush = true;
                 }
                 if(histogram != null) {
                     histogram.labels(labels).observe(Double.valueOf(String.valueOf(value)));
-                    needPush = true;
                 }
 
                 // 只保存最后一条
@@ -113,10 +108,8 @@ public class PrometheusCollector extends Collector<PrometheusCollectorConfig> {
         }
 
         try {
-            if(needPush) {
-                pushGateway.push(registry, getCollectorConfig().getJob());
-                context.getLog().trace("PrometheusCollector collect success");
-            }
+            pushGateway.push(registry, getCollectorConfig().getJob());
+            context.getLog().trace("PrometheusCollector collect success");
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
