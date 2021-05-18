@@ -5,13 +5,13 @@
 AnyMetrics - 面向开发人员、声明式的 Metrics 采集与监控系统，可以对结构化与非结构化、有界数据与无界数据进行采集，通过对采集数据进行提取、过滤、逻辑运算等处理后将结果存储流行的监控系统或存储引擎中（如 Prometheus、ES）从而搭建起完整的监控体系，同时结合 grafana 完成数据的可视化
 
 
-数据的采集、提取、过滤、存储等均以配置的方式驱动，无需额外的开发，对应到 AnyMetrics 中分别是对数据源、收集规则、收集器进行配置，基于这些配置 AnyMetrics 会以管道的方式自动完成从数据采集到数据存储的全部工作
+数据的采集、提取、过滤、存储等均以配置的方式驱动，无需额外的开发，对应到 AnyMetrics 中分别是对数据源（DataSource）、收集规则（Filter）、收集器（Collector）进行配置，基于这些配置 AnyMetrics 会以管道的方式自动完成从数据采集到数据存储的全部工作
 
 对于有界数据的任务，AnyMetrics 会以固定的频率从数据源中拉取数据，AnyMetrics 中内置了 MySQL 类型的有数据源，对于无界数据的任务，AnyMetrics 会以一个时间窗口为时间单位从数据源中批量拉取数据，AnyMetrics 中内置了 Kafka 类型的无界数据源
 
 AnyMetrics 的数据源可以是任何系统，比如可以把 HTTP 请求结果当作数据源、也可以把 ES 的检索结果当作数据源
 
-通过对数据源的原始数据进行提取和过滤可以完成从非结构数据变成结构化数据的目的，AnyMetrics 中内置了JSON、正则表达式和 Spring EL 表达式3种数据收集与过滤规则（Filter）
+通过对数据源的原始数据进行提取和过滤可以完成从非结构数据变成结构化数据的目的，AnyMetrics 中内置了JSON、正则表达式和 Spring EL 表达式3种数据过滤规则（Filter）
 
 - 通过JSON Filter可以完成对JSON数据格式的提取和过滤
 - 通过Regular Filter可以完成对数据的提取和过滤
@@ -24,17 +24,26 @@ Filter 可以单独使用，也可以组合起来使用，AnyMetrics 会将所�
 AnyMetrics 的收集器可以将数据推送到任何系统，比如 MySQL、ES 甚至推送给一个 WebHook
 
 
-不论是在收集规则配置还是收集器配置中，均可以使用变量配置，来完成动态配置的替换，变量数据来源于正则表达式 Filter
+不论是在收集规则配置还是收集器配置中，均可以使用变量配置，来完成动态配置的替换，变量数据来源于过滤器Filter
 
 - 在Regular Filter中通过定义如 _(.*)_ 方式可以得到名为 _$1_ 的变量
 - 在JSON Filter中会将 _key_ 作为变量名，如数据格式为 {'id' : 1}的一条数据，经过处理后会产生 变量名为 _id_ ,变量值为 _1_ 的变量
-- 在Spring EL Filter中会对数据进行逻辑运算，不满足条件的数据将被过滤掉
-- 在需要进行逻辑运算时可以使用Spring EL表达式，通过在变量前加 _#_ 号引用变量，如 _#$1_、_#ID_
-- 在其它Filter或者收集器的地方可以使用 _key_ 、 _$1_ 方式引用变量
+- 在Spring EL Filter中可以对变量进行逻辑运算、过滤，不满足条件的数据将被丢弃，如 #$1 == 1 or #id == 1
+- 逻辑运算使用Spring EL表达式，通过在变量前加 _#_ 号引用变量，如 _#$1_、_#id_，SpEL语法请参考 [Spring Expression Language (SpEL)](https://docs.spring.io/spring-framework/docs/4.2.x/spring-framework-reference/html/expressions.html)
 
-这样就满足从数据提取到数据的再次组装或者运算操作，具体什么配置可以支持变量或者 Spring EL 表达式取决于收集规则和收集器的具体实现，AnyMetrics 内置的 Spring EL Filter 中的 expression 配置以及 Prometheus 收集器中的 value 配置均支持 Spring EL 表达式以及变量(_#key_)、Prometheus 收集器中的 labels 配置支持变量(_key_)
+这样就满足从数据提取到数据的再次组装或者运算操作，具体什么配置可以支持变量或者 Spring EL 表达式取决于收集规则和收集器的具体实现，AnyMetrics 内置的 Spring EL Filter 中的 expression 配置以及 Prometheus 收集器中的 value 配置均支持 Spring EL 表达式运算(使用 _#key_ 引用变量)、Prometheus 收集器中的 labels 支持变量引用(使用 _key_ 引用变量)
 
-AnyMetrics 采用插件式的设计方式，不论是数据源、收集规则还是收集器均可以实现拓展，即时是 AnyMetrics 中以及内置的插件也是采用对等的方式实现的，加载和使用什么插件完全取决与声明的配置
+AnyMetrics 采用插件式的设计方式，不论是数据源（DataSource）、收集规则（Filter）还是收集器（Collector）均可以实现拓展，即使是 AnyMetrics 中以及内置的插件也是采用对等的方式实现的，加载和使用什么插件完全取决与声明的配置
+
+
+
+**内置插件**
+
+|  数据源（DataSource）| 收集规则（Filter）  | 收集器（Collector）|
+|  ----               | ----              |         ----      |
+| mysql               | JSON Filter       |    prometheus     |
+| kafka               | Regular Filter    |                   |
+| http                | Spring EL Filter  |                   |
 
 
 # 架构
@@ -111,7 +120,7 @@ https://github.com/prometheus/pushgateway
 
 #### 4、收集规则
 ![image.png](./README-imgs/image%20(11).png)
-filters 支持 regular 和 el 2种类型，在 regular 中使用括号的方式提取需要的变量，多个变量以 $1、$2 ... $N 的方式命名，在 el 中可以使用 _#$1 _变量用来做运算
+filters 支持 regular、el、JSON 3种类型，在 regular 中使用括号的方式提取需要的变量，多个变量以 $1、$2 ... $N 的方式命名；在 el 中可以使用 _#$1 _变量用来做运算；在 JSON 中key将作为变量名称
 
 #### 5、收集器
 ![image.png](./README-imgs/image%20(12).png)
