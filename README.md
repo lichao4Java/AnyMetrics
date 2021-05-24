@@ -14,14 +14,14 @@ AnyMetrics 的数据源可以是任何系统，比如可以把 HTTP 请求结果
 通过对数据源的原始数据进行提取和过滤可以完成从非结构数据变成结构化数据的目的，AnyMetrics 中内置了JSON、正则表达式和 Spring EL 表达式3种数据过滤规则（Filter）
 
 - 通过JSON Filter可以完成对JSON数据格式的提取和过滤
-- 通过Regular Filter可以完成对数据的提取和过滤
+- 通过Regular Filter可以完成对非结构化和结构化数据的提取和过滤
 - 通过Spring EL Filter可以完成对原始数据以及以上Filter的处理之后的数据进行的逻辑运算等操作
 
 Filter 可以单独使用，也可以组合起来使用，AnyMetrics 会将所有 Filter 以 FilterChain 的方式依次执行
 
 当对数据完成了提取和过滤后，下一步就需要将数据按照指定的方式存储到目标系统中，AnyMetrics 中内置了 Prometheus、Nightingale 和 Open-Falcon 收集器，通过定义 Metrics ，可以将数据推送到收集器中
 
-AnyMetrics 的收集器可以将数据推送到任何系统，比如 MySQL、ES 甚至推送给一个 WebHook
+AnyMetrics 的收集器可以将数据推送到任何系统，比如 MySQL、ES 甚至推送给一个 WebHook，只需要拓展一个相应的收集器插件即可
 
 
 不论是在收集规则配置还是收集器配置中，均可以使用变量配置，来完成动态配置的替换，变量数据来源于过滤器Filter
@@ -46,7 +46,7 @@ AnyMetrics 采用插件式的设计方式，不论是数据源（DataSource）�
 | http                | Spring EL Filter  |    Nightingale   |
 
 
-# 架构
+# 整体结构
 ![image.png](./README-imgs/image%20(5).png)
 
 
@@ -65,7 +65,7 @@ SpringBoot + Nacos + Vue + ElementUI
 
 https://nacos.io/zh-cn/docs/quick-start.html
 
-## 使用 prometheus 作为收集器
+## 使用 Prometheus 作为收集器
 **安装 prometheus**
 
 https://github.com/prometheus/prometheus
@@ -102,7 +102,7 @@ https://github.com/open-falcon/falcon-plus/blob/master/README.md
 启动后访问 http://localhost:8080/index.html
 
 
-# 如何配置
+# 如何配置采集任务
 
 
 #### 1、选择任务类型
@@ -116,7 +116,7 @@ https://github.com/open-falcon/falcon-plus/blob/master/README.md
 
 #### 2.2、选择数据源
 ![image.png](./README-imgs/image%20(8).png)
-选择数据源为 mysql（目前仅支持了 mysql），并完善相关配置
+选择数据源为 mysql（以mysql为例），并完善相关配置
 
 #### 3.1、无界数据 
 ![image.png](./README-imgs/image%20(9).png)
@@ -125,11 +125,11 @@ https://github.com/open-falcon/falcon-plus/blob/master/README.md
 
 #### 3.2、选择数据源
 ![image.png](./README-imgs/image%20(10).png)
-选择 kafka 为数据源（目前仅支持了 kafka ），并完善相关配置
+选择 kafka 为数据源（以 kafka 为例），并完善相关配置
 
 #### 4、收集规则
 ![image.png](./README-imgs/image%20(11).png)
-filters 支持 regular、el、JSON 3种类型，在 regular 中使用括号的方式提取需要的变量，多个变量以 $1、$2 ... $N 的方式命名；在 el 中可以使用 _#$1 _变量用来做运算；在 JSON 中key将作为变量名称
+filters 支持 regular、SpEL、JSON 3种类型，在 regular 中使用括号的方式提取需要的变量，多个变量以 $1、$2 ... $N 的方式命名；在 el 中可以使用 _#$1 _变量用来做运算；在 JSON 中key将作为变量名称
 
 #### 5、收集器
 ![image.png](./README-imgs/image%20(12).png)
@@ -149,7 +149,7 @@ filters 支持 regular、el、JSON 3种类型，在 regular 中使用括号的�
 
 
 #### 3、iframe
-![image.png](./README-imgs/image%20(15).png)
+![image.png](./README-imgs/image%20(20).png)
 点击 iframe Tab 可以把外部系统嵌入到任务中，如将 grafana 的 dashboard 链接嵌入到系统中展示
 
 
@@ -163,7 +163,8 @@ filters 支持 regular、el、JSON 3种类型，在 regular 中使用括号的�
 # 示例
 
 
-## 例1：APM监控 - 采集所有的执行时间超过3秒的慢链路并配置报警策略
+## 例1：采集所有的执行时间超过3秒的慢链路并配置报警策略
+**慢链路数据源来源可以是调用日志也可以是拦截器打印的接口耗时日志**
 
 #### 1、设置kafka为数据源，从kafka中读取trace日志
 ```json
@@ -267,7 +268,7 @@ filters 支持 regular、el、JSON 3种类型，在 regular 中使用括号的�
 
 打开 Grafana，创建一个 Panel，选择数据源为 promethus，图标类型为 Graph，在 Metrics 中输入 PromQL 语法 anymetrics_apm_slow_trace{}
 ![image.png](./README-imgs/image%20(17).png)
-关于 PromQL 可以参考 [https://www.cnblogs.com/kevincaptain/p/10508628.html](https://www.cnblogs.com/kevincaptain/p/10508628.html)
+关于 PromQL 可以参考 [https://prometheus.io/docs/prometheus/latest/querying/basics/](https://prometheus.io/docs/prometheus/latest/querying/basics/)
 
 **4.2 配置Grafana告警**
 
@@ -474,6 +475,21 @@ $16:0.005
 [APM-Nginx日志监控](./demo/Nginx日志监控.json)
 
 [APM-可视化展示用户总数](./demo/可视化展示用户总数.json)
+
+
+# AnyMetrics 与 MicroMeter 的区别
+
+Micrometer https://micrometer.io/  为最流行的监控系统提供了一个简单的仪表客户端外观，允许仪表化JVM应用，而无需关心是哪个供应商提供的指标。它的作用和SLF4J类似，只不过它关注的不是Logging（日志），而是application metrics（应用指标）。简而言之，它就是应用监控界的SLF4J
+
+
+|   区别      | Micrometer  | AnyMetrics|
+|  ----   | ----              |         ----      |
+| 运行方式 | 运行在用户进程中       |    独立进程运行    |
+| 使用方式 | 在应用中对代码埋点，主要关注metrics  |    无埋点收集，基于应用的运行日志并基于规则配置聚合metrics，主要关注日志    |
+| 数据纬度 | 按照单个应用纬度收集数据，关注单个应用数据  |    全局数据聚合，关注整体趋势   |
+| 监控系统 | AppOptics、Azure Monitor、Netflix Atlas、CloudWatch、Datadog、Dynatrace、Elastic、Ganglia、Graphite 、Humio、Influx/Telegraf、JMX、 KairosDB、New Relic、Prometheus、SignalFx、Google Stackdriver、StatsD、Wavefront  |   支持 Prometheus、Nightingale、Open-Falcon   |
+| 跨平台   | 仅支持Java平台  | 跨平台，支持任意应用的日志数据，同时支持有界数据和无界数据   |
+
 
 
 # Q&A
