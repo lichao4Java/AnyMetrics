@@ -14,13 +14,22 @@ public class PipelineTaskLog implements Serializable {
     private static final Logger logger = LoggerFactory.getLogger("PipelineTaskLog");
     private static final long serialVersionUID = -2073424698752121062L;
 
+    /**
+     * 最大日志条数
+     */
+    private static final int MAX_LOGS = Integer.parseInt(System.getProperty("maxLogs", "100"));
+
+    /**
+     * 是否打印日志
+     */
+    private static boolean TRACE_LOG_PRINT = Boolean.parseBoolean(System.getProperty("traceLog", "false"));
+
     private String taskName;
 
     public PipelineTaskLog(String taskName) {
         this.taskName = taskName;
     }
 
-    private static final int MAX_LOGS = 100;
 
     private List<String> logs = new ArrayList<>(MAX_LOGS);
 
@@ -28,11 +37,14 @@ public class PipelineTaskLog implements Serializable {
 
         log = String.format("[%s] - %s", taskName, log);
 
-        logger.info(log);
+        if(TRACE_LOG_PRINT) {
+            logger.info(log);
+        }
 
         if(logs.size() >= MAX_LOGS) {
             logs.clear();
         }
+
         logs.add(String.format("%s - %s", new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date(System.currentTimeMillis())), log));
     }
 
