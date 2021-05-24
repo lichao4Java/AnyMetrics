@@ -26,7 +26,7 @@ public class PipelineTaskLog implements Serializable {
 
     public void trace(String log) {
 
-        log = "[" + taskName + "] - " + log;
+        log = String.format("[%s] - %s", taskName, log);
 
         logger.info(log);
 

@@ -19,8 +19,11 @@ import java.util.regex.Pattern;
  */
 public class RegularRuleFilter extends RuleFilter {
 
+    private Pattern p;
+
     public RegularRuleFilter(FiltersConfig filtersConfig, RuleFilter next) {
         super(filtersConfig, next);
+        this.p = Pattern.compile(filtersConfig.getExpression());
     }
 
     @Override
@@ -28,7 +31,6 @@ public class RegularRuleFilter extends RuleFilter {
 
         PipelineTaskContext context = PipelineTaskContext.getContext();
 
-        Pattern p = Pattern.compile(filtersConfig.getExpression());
         Iterator<FetchData> fetchCallbackData = context.getFetchCallbackData().iterator();
 
         while(fetchCallbackData.hasNext()) {

@@ -20,8 +20,10 @@ public class KafkaDataSource extends TimeWindowUnBoundedDataSource<KafkaDataSour
 
     private KafkaConsumer<String, String> consumer;
 
-    // millis
-    private static int pollInterval = 100;
+    /**
+     * kafka consumer poll interval
+     */
+    private static int pollInterval = Integer.parseInt(System.getProperty("kafkaPollInterval", "2000"));
 
 
     @Override

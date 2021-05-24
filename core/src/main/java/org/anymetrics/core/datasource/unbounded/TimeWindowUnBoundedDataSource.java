@@ -8,10 +8,7 @@ import org.anymetrics.core.task.PipelineTaskContext;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -31,6 +28,7 @@ public abstract class TimeWindowUnBoundedDataSource<T extends DataSourceConfig, 
     private ExecutorService bossExecutorService = newBossExecutorService();
 
     private ExecutorService newBossExecutorService() {
+
         return Executors.newSingleThreadExecutor(new ThreadFactory() {
 
             @Override
@@ -46,15 +44,26 @@ public abstract class TimeWindowUnBoundedDataSource<T extends DataSourceConfig, 
 
 
     private ExecutorService newWorkExecutorService() {
-        return Executors.newFixedThreadPool(nThreads, new ThreadFactory() {
 
-            @Override
-            public Thread newThread(Runnable r) {
-                Thread thread = new Thread(r);
-                thread.setName("AnyMetrics-TimeWindow-Consumer-Work" + threadCounter.getAndIncrement());
-                return thread;
-            }
-        });
+       return new ThreadPoolExecutor(nThreads / 2, nThreads,
+               100L, TimeUnit.MILLISECONDS,
+               new LinkedBlockingQueue<Runnable>(),
+               new ThreadFactory() {
+
+                   @Override
+                   public Thread newThread(Runnable r) {
+                       Thread thread = new Thread(r);
+                       thread.setName("AnyMetrics-TimeWindow-Consumer-Work" + threadCounter.getAndIncrement());
+                       return thread;
+                   }
+               },
+               new RejectedExecutionHandler() {
+                   @Override
+                   public void rejectedExecution(Runnable r, ThreadPoolExecutor executor) {
+                       logger.info("AnyMetrics-TimeWindow-Consumer-Work-Reject executor = {}", executor.toString());
+                   }
+               });
+
     }
 
     @Override
@@ -124,6 +133,7 @@ public abstract class TimeWindowUnBoundedDataSource<T extends DataSourceConfig, 
                     logger.debug("boss thread running");
 
                     List<Object> poll = poll();
+
                     if(poll != null && poll.size() > 0) {
                         fetchData.addAll(poll);
                     }
