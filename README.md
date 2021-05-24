@@ -228,7 +228,7 @@ filters 支持 regular、el、JSON 3种类型，在 regular 中使用括号的�
 
 
 #### 3、设置收集器
-把数据收集到 promethus 中
+把数据收集到 prometheus 中
 ```json
 {
     "pushGateway": "192.168.0.1:9091",
@@ -250,7 +250,7 @@ filters 支持 regular、el、JSON 3种类型，在 regular 中使用括号的�
             ]
         }
     ],
-    "type": prometheu,
+    "type": "prometheus",
     "job": "anymetrics_apm_slow_trace"
 }
 ```
