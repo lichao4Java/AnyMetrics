@@ -144,6 +144,6 @@ public class PrometheusCollector extends Collector<PrometheusCollectorConfig> {
             Object value = expression.getValue(standardEvaluationContext);
             return value;
         }
-        return null;
+        return metricsConfig.getValue();
     }
 }

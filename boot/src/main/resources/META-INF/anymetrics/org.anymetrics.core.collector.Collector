@@ -1,1 +1,3 @@
 prometheus=org.anymetrics.support.collector.prometheus.PrometheusCollector
+nightingale=org.anymetrics.support.collector.nightingale.NightingaleCollector
+openfalcon=org.anymetrics.support.collector.nightingale.NightingaleCollector

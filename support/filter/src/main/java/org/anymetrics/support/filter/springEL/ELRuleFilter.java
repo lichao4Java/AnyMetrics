@@ -31,7 +31,8 @@ public class ELRuleFilter extends RuleFilter {
         while(fetchCallbackData.hasNext()) {
             try {
                 FetchData next = fetchCallbackData.next();
-                Boolean filtered = parser.parseExpression(filtersConfig.getExpression()).getValue(next.getELContext() == null ? new StandardEvaluationContext() : next.getELContext(), Boolean.class);
+                StandardEvaluationContext SpELContext = initSpELContext(next);
+                Boolean filtered = parser.parseExpression(filtersConfig.getExpression()).getValue(SpELContext, Boolean.class);
                 // do not match
                 if(!filtered) {
                     fetchCallbackData.remove();

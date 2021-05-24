@@ -283,7 +283,7 @@ export default {
       ruleKindTypes :[{value : 'schedule', label :'有界数据'},{value : 'stream', label :'无界数据'}],
       streamDataSourceTypes :[{value : 'kafka', label :'kafka'}],
       scheduleDataSourceTypes :[{value : 'mysql', label :'mysql'}, {value : 'simpleHTTP', label :'simpleHTTP'}],
-      collectorTypes :[{value : 'prometheus', label :'prometheus'}],
+      collectorTypes :[{value : 'prometheus', label :'prometheus'}, {value : 'nightingale', label :'nightingale'},{value : 'openfalcon', label :'openfalcon'}],
       dataSourceConfigTemp : {
         mysql: `
 {
@@ -359,7 +359,36 @@ schedule : `
             "type":"gauge|counter|histogram"
         }
     ]
+}`,
+nightingale: `{
+    "type":"nightingale",
+    "agentAddr":"ip:port",
+    "transferAddr":"ip:port",
+    "metrics":[
+        {
+            "counterType":"GAUGE|COUNTER|SUBTRACT",
+            "metric":"metric",
+            "endpoint":"endpoint",
+            "tags":"tag1=a,tag=b",
+            "value":"1",
+            "tagsMap":{"tag1","a", "tag2","b"}
+        }
+    ]
+}`,
+openfalcon: `{
+    "type":"openfalcon",
+    "agentAddr":"ip:port",
+    "metrics":[
+        {
+            "counterType":"GAUGE|COUNTER",
+            "metric":"metric",
+            "endpoint":"endpoint",
+            "tags":"tag1=a,tag=b",
+            "value":"1"
+       }
+    ]
 }`
+      
       }
     }
   },

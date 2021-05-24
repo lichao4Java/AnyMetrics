@@ -38,15 +38,17 @@ public class RegularRuleFilter extends RuleFilter {
             if(matcher.find()) {
                 // matched variable
                 // $1 $2 $3 ...
-                Map<String, String> fetchDataVariable = fetchData.getFetchDataVariable() == null ? new HashMap<>() : fetchData.getFetchDataVariable();
+
+                Map<String, String> fetchDataVariable = appendFetchDataVariable(fetchData);
+
                 int k = 1;
                 while (k <= matcher.groupCount()) {
                     String group = matcher.group(k);
                     fetchDataVariable.put("$" + k, group);
                     k++;
                 }
-                fetchData.setFetchDataVariable(fetchDataVariable);
-                fetchData.setELContext(initELVariable(fetchData, fetchDataVariable));
+
+                appendSpELVariable(fetchData);
 
                 if(!fetchDataVariable.isEmpty()) {
                     context.getLog().trace("RegularRuleFilter - variable : " + JSON.toJSONString(fetchDataVariable));
@@ -58,17 +60,5 @@ public class RegularRuleFilter extends RuleFilter {
         }
     }
 
-    private StandardEvaluationContext initELVariable(FetchData fetchData, Map<String, String> fetchDataVariable) {
-        StandardEvaluationContext context = fetchData.getELContext() == null ? new StandardEvaluationContext() : fetchData.getELContext();
-        for(String index : fetchDataVariable.keySet()) {
-            String value = fetchDataVariable.get(index);
-            try {
-                context.setVariable(index, Long.parseLong(value));
-            } catch (Exception e) {
-                context.setVariable(index, value);
-            }
-        }
-        return context;
-    }
 
 }

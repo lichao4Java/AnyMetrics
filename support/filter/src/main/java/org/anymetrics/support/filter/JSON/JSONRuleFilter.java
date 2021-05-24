@@ -7,7 +7,6 @@ import org.anymetrics.core.datasource.callback.FetchData;
 import org.anymetrics.core.rule.FiltersConfig;
 import org.anymetrics.core.rule.filter.RuleFilter;
 import org.anymetrics.core.task.PipelineTaskContext;
-import org.springframework.expression.spel.support.StandardEvaluationContext;
 
 import java.util.*;
 
@@ -38,14 +37,12 @@ public class JSONRuleFilter extends RuleFilter {
             // JSON 目标数据
             JSONObject jsonObject = splitJSONFetchData.getJsonObject();
 
-            Map<String, String> fetchDataVariable = fetchData.getFetchDataVariable() == null ? new HashMap<>() : fetchData.getFetchDataVariable();
+            Map<String, String> fetchDataVariable = appendFetchDataVariable(fetchData);
 
             // 把JSON.key作为变量名称， JSON.value作为变量值
-            initFetchDataVariable(fetchDataVariable, jsonObject);
+            initFetchDataVariable(fetchDataVariable, null, jsonObject);
 
-            fetchData.setFetchDataVariable(fetchDataVariable);
-            // 同时把变量写入 Spring EL Context
-            fetchData.setELContext(initELVariable(fetchData, fetchDataVariable));
+            appendSpELVariable(fetchData);
 
             if(!fetchDataVariable.isEmpty()) {
                 context.getLog().trace("JSONRuleFilter - variable : " + JSON.toJSONString(fetchDataVariable));
@@ -54,11 +51,16 @@ public class JSONRuleFilter extends RuleFilter {
             splitFetchDatas.add(fetchData);
         }
 
-        // split 一条数据 到 多条数据
         context.setFetchCallbackData(splitFetchDatas);
 
     }
 
+    /**
+     *  将每条 FetchData JSONArray 转成 List<JSONObject>
+     *  如 FetchData = [{},{}] 对象转成 List<FetchData>
+     * @param context
+     * @return
+     */
     private List<SplitJSONFetchData> splitJSONFetchData(PipelineTaskContext context) {
 
         List<SplitJSONFetchData> splitJSONFetchDatas = new ArrayList<>();
@@ -101,22 +103,54 @@ public class JSONRuleFilter extends RuleFilter {
     }
 
 
-    private void initFetchDataVariable(Map<String, String> fetchDataVariable, JSONObject jsonObject) {
+    /**
+     * 将JSON串转换成Map
+     *  1 当属性的value为JSONObject类型时，key = 属性名_JSONObject属性名
+     *  2 当属性的value为JSONArray类型时，key = 属性名_下标_JSONObject属性名
+     *
+     * 如以下JSON串：
+     * {
+     *     "a":1,
+     *     "b":{
+     *         "c":2
+     *     },
+     *     "d":[
+     *         {
+     *             "e":3,
+     *             "f":"f"
+     *         }
+     *     ],
+     *     "g":"g"
+     * }
+     * 转化成Map后的结果为:
+     * {
+     *     "a":"1",
+     *     "b_c":"2",
+     *     "d_0_e":"3",
+     *     "d_0_f":"f",
+     *     "g":"g"
+     * }
+     *
+     * @param fetchDataVariable
+     * @param parentKey
+     * @param jsonObject
+     */
+    private void initFetchDataVariable(Map<String, String> fetchDataVariable, String parentKey, JSONObject jsonObject) {
         for(String key : jsonObject.keySet()) {
-            fetchDataVariable.put(key, jsonObject.getString(key));
+            Object o = jsonObject.get(key);
+            if(o instanceof JSONObject) {
+                initFetchDataVariable(fetchDataVariable, key, (JSONObject) o);
+            }
+            else if(o instanceof JSONArray) {
+                JSONArray a = (JSONArray) o;
+                for(int i = 0; i < a.size(); i ++) {
+                    initFetchDataVariable(fetchDataVariable, key + '_' + i , a.getJSONObject(i));
+                }
+            }
+            else {
+                fetchDataVariable.put(parentKey == null ? key : parentKey + "." + key, jsonObject.getString(key));
+            }
         }
     }
 
-    private StandardEvaluationContext initELVariable(FetchData fetchData, Map<String, String> fetchDataVariable) {
-        StandardEvaluationContext context = fetchData.getELContext() == null ? new StandardEvaluationContext() : fetchData.getELContext();
-        for(String index : fetchDataVariable.keySet()) {
-            String value = fetchDataVariable.get(index);
-            try {
-                context.setVariable(index, Long.parseLong(value));
-            } catch (Exception e) {
-                context.setVariable(index, value);
-            }
-        }
-        return context;
-    }
 }

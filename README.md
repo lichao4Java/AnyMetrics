@@ -2,7 +2,7 @@
 
 ![image.png](./README-imgs/logo.png)
 
-AnyMetrics - 面向开发人员、声明式的 Metrics 采集与监控系统，可以对结构化与非结构化、有界数据与无界数据进行采集，通过对采集数据进行提取、过滤、逻辑运算等处理后将结果存储流行的监控系统或存储引擎中（如 Prometheus、ES）从而搭建起完整的监控体系，同时结合 grafana 完成数据的可视化
+AnyMetrics - 面向开发人员、声明式的 Metrics 采集与监控系统，可以对结构化与非结构化、有界数据与无界数据进行采集，通过对采集数据进行提取、过滤、逻辑运算等处理后将结果存储流行的监控系统或存储引擎中（如 Prometheus、Nightingale、Open-Falcon等）从而搭建起完整的监控体系，同时也可以结合 grafana 完成对数据的可视化
 
 
 数据的采集、提取、过滤、存储等均以配置的方式驱动，无需额外的开发，对应到 AnyMetrics 中分别是对数据源（DataSource）、收集规则（Filter）、收集器（Collector）进行配置，基于这些配置 AnyMetrics 会以管道的方式自动完成从数据采集到数据存储的全部工作
@@ -19,7 +19,7 @@ AnyMetrics 的数据源可以是任何系统，比如可以把 HTTP 请求结果
 
 Filter 可以单独使用，也可以组合起来使用，AnyMetrics 会将所有 Filter 以 FilterChain 的方式依次执行
 
-当对数据完成了提取和过滤后，下一步就需要将数据按照指定的方式存储到目标系统中，AnyMetrics 中内置了 Prometheus 收集器，通过定义 Metrics ，可以将数据推送到 Prometheus 的 PushGateway 中
+当对数据完成了提取和过滤后，下一步就需要将数据按照指定的方式存储到目标系统中，AnyMetrics 中内置了 Prometheus、Nightingale 和 Open-Falcon 收集器，通过定义 Metrics ，可以将数据推送到收集器中
 
 AnyMetrics 的收集器可以将数据推送到任何系统，比如 MySQL、ES 甚至推送给一个 WebHook
 
@@ -41,13 +41,13 @@ AnyMetrics 采用插件式的设计方式，不论是数据源（DataSource）�
 
 |  数据源（DataSource）| 收集规则（Filter）  | 收集器（Collector）|
 |  ----               | ----              |         ----      |
-| mysql               | JSON Filter       |    prometheus     |
-| kafka               | Regular Filter    |                   |
-| http                | Spring EL Filter  |                   |
+| mysql               | JSON Filter       |    Prometheus     |
+| kafka               | Regular Filter    |    Open-Falcon    |
+| http                | Spring EL Filter  |    Nightingale   |
 
 
 # 架构
-![image.png](./README-imgs/image%20(5).jpg)
+![image.png](./README-imgs/image%20(5).png)
 
 
 # 技术栈
@@ -61,17 +61,26 @@ SpringBoot + Nacos + Vue + ElementUI
 **启动之前需要安装用到的依赖**
 
 
-**安装 nacos（必选）**
+**安装 nacos（存储监控配置）**
 
 https://nacos.io/zh-cn/docs/quick-start.html
 
-**安装 prometheus（可选）**
+## 使用 prometheus 作为收集器
+**安装 prometheus**
 
 https://github.com/prometheus/prometheus
 
-**安装 pushgateway（可选）**
+**安装 pushgateway**
 
 https://github.com/prometheus/pushgateway
+
+## 使用 Nightingale 作为收集器
+https://n9e.didiyun.com/docs/install/
+
+## 使用 Open-Falcon 作为收集器
+https://github.com/open-falcon/falcon-plus/blob/master/README.md
+
+
 
 # 启动
 
@@ -124,7 +133,7 @@ filters 支持 regular、el、JSON 3种类型，在 regular 中使用括号的�
 
 #### 5、收集器
 ![image.png](./README-imgs/image%20(12).png)
-选择 prometheus（目前仅支持了prometheus）并完善 metrics 相关配置信息，type 支持 gauge、counter、histogram 类型，labels 支持 _$1_ 变量，value 支持 Spring EL 表达式变量运算
+选择 prometheus（目前支持了prometheus、open-falcon、nightingale）并完善 metrics 相关配置信息，type 支持 gauge、counter、histogram 类型，labels 支持 _$1_ 变量，value 支持 Spring EL 表达式变量运算
 
 # 运行任务
 
@@ -241,7 +250,7 @@ filters 支持 regular、el、JSON 3种类型，在 regular 中使用括号的�
             ]
         }
     ],
-    "type": "prometheus",
+    "type": prometheu,
     "job": "anymetrics_apm_slow_trace"
 }
 ```
@@ -262,6 +271,7 @@ filters 支持 regular、el、JSON 3种类型，在 regular 中使用括号的�
 
 **4.2 配置Grafana告警**
 
+以Grafana作为报警平台为例配置告警策略：
 
 在 Panel 中选择 Alert Tab，定义告警规则，如：
 ![image.png](./README-imgs/image%20(18).png)
@@ -302,26 +312,25 @@ filters 支持 regular、el、JSON 3种类型，在 regular 中使用括号的�
     "password": "root",
     "jdbcurl": "jdbc:mysql://192.168.0.1:3306/user",
     "type": "mysql",
-    "sql": "select count(1) from user",
+    "sql": "select count(1) as total from user",
     "username": "root"
 }
 ```
 #### 2、设置收集规则
-根据 sql 查询出来的结果，提取出 count(1)，使用正则表达式收集规则：
+查询得到原始数据格式为{"total": 1}，因此使用 JSON 过滤器，得到 key=total，value=1的变量：
 ```json
 {
     "kind": "schedule",
     "interval": 5,
     "filters": [
         {
-            "expression": "\\{\\\"count\\(1\\)\\\":(.*)\\}",
-            "type": "regular"
+            "type": "JSON"
         }
     ]
 }
 ```
 #### 3、设置收集器
-把数据收集到 promethus 中
+把数据收集到 promethus 中，value 为 #count
 ```json
 {
     "pushGateway": "192.168.0.1:9091",
@@ -330,14 +339,14 @@ filters 支持 regular、el、JSON 3种类型，在 regular 中使用括号的�
             "help": "anymetrics_member_count",
             "name": "anymetrics_member_count",
             "type": "gauge",
-            "value": "#$1"
+            "value": "#count"
         }
     ],
     "type": "prometheus",
     "job": "anymetrics_member_count"
 }
 ```
-需要定义 promethus 的 metrics，名称是 anymetrics_member_count，类型为 gauge，因为只需要收集用户总数，因此不需要定义lables和labelNames，value 为 #$1
+需要定义 promethus 的 metrics，名称是 anymetrics_member_count，类型为 gauge，因为只需要收集用户总数，因此不需要定义lables和labelNames
 
 
 #### 4、配置可视化
@@ -481,7 +490,8 @@ $16:0.005
 **有界数据目前支持 mysql、http；无界数据目前支持 kafka**
 
 ## 目前支持了哪些收集器？
-**目前仅支持 prometheus，使用 pushgateway 方式将数据推送到 prometheus 中**
-
+- **1 prometheus，使用 pushgateway 方式将数据推送到 prometheus**
+- **2 Nightingale，使用本地 agent 接口或者中心 transfer 接口上报数据**
+- **3 Open-Falcon，使用本地 agent 接口上报数据**
 ## 已经使用了 Skywalking、Zipkin 这类调用链追踪系统还需要使用 AnyMetrics 吗？
 **2者不冲突，调用链追踪系统是收集链路的调用关系和 APM 指标数据，AnyMetrics 不光可以使用结构化的调用链追踪系统的指标日志作为数据源来监控系统，同时也可以将应用系统中非结构化的日志作为数据源来监控系统运行情况，如监控一些 Exception 事件，也可以对数据库的表数据进行可视化展示或者监控，同时 AnyMetrics 支持跨平台系统，任何系统产生的日志都可以作为数据源用于监控系统运行情况**
