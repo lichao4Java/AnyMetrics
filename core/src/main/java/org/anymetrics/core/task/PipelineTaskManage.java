@@ -13,10 +13,7 @@ import org.anymetrics.core.util.SPIUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 public class PipelineTaskManage {
 
@@ -138,12 +135,19 @@ public class PipelineTaskManage {
         return null;
     }
 
-
     /**
      * 启动所有任务
      */
-    public static void start() {
+    public static void start(boolean deplay) {
         for(PipelineTask task : tasks) {
+            if(deplay) {
+                try {
+                    //延时 1 到 10秒启动
+                    Thread.sleep((long)(new Random().nextInt(9000)) + 1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
             task.start();
         }
     }

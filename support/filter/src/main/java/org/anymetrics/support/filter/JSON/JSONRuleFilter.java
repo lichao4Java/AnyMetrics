@@ -37,7 +37,7 @@ public class JSONRuleFilter extends RuleFilter {
             // JSON 目标数据
             JSONObject jsonObject = splitJSONFetchData.getJsonObject();
 
-            Map<String, String> fetchDataVariable = appendFetchDataVariable(fetchData);
+            Map<String, String> fetchDataVariable = initFetchDataVariable(fetchData);
 
             // 把JSON.key作为变量名称， JSON.value作为变量值
             initFetchDataVariable(fetchDataVariable, null, jsonObject);

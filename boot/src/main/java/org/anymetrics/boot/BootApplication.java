@@ -25,7 +25,7 @@ class StartTaskRunner implements ApplicationRunner {
 
         String auto = System.getProperty("auto");
         if(auto != null) {
-            PipelineTaskManage.start();
+            PipelineTaskManage.start(true);
         }
     }
 }

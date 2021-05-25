@@ -9,12 +9,13 @@ AnyMetrics - 面向开发人员、声明式的 Metrics 采集与监控系统，�
 
 对于有界数据的任务，AnyMetrics 会以固定的频率从数据源中拉取数据，AnyMetrics 中内置了 MySQL 类型的有数据源，对于无界数据的任务，AnyMetrics 会以一个时间窗口为时间单位从数据源中批量拉取数据，AnyMetrics 中内置了 Kafka 类型的无界数据源
 
-AnyMetrics 的数据源可以是任何系统，比如可以把 HTTP 请求结果当作数据源、也可以把 ES 的检索结果当作数据源
+AnyMetrics 的数据源可以是任何系统，比如可以把 HTTP 请求结果当作数据源、也可以把 ES 的检索结果当作数据源，，只需要拓展一个相应的数据源插件即可
 
-通过对数据源的原始数据进行提取和过滤可以完成从非结构数据变成结构化数据的目的，AnyMetrics 中内置了JSON、正则表达式和 Spring EL 表达式3种数据过滤规则（Filter）
+通过对数据源的原始数据进行提取和过滤可以完成从非结构数据变成结构化数据的目的，AnyMetrics 中内置了JSON、正则表达式、Split 和 Spring EL 表达式4种数据过滤规则（Filter）
 
 - 通过JSON Filter可以完成对JSON数据格式的提取和过滤
 - 通过Regular Filter可以完成对非结构化和结构化数据的提取和过滤
+- 通过Split Filter可以完成对结构化数据的提取
 - 通过Spring EL Filter可以完成对原始数据以及以上Filter的处理之后的数据进行的逻辑运算等操作
 
 Filter 可以单独使用，也可以组合起来使用，AnyMetrics 会将所有 Filter 以 FilterChain 的方式依次执行
@@ -28,6 +29,7 @@ AnyMetrics 的收集器可以将数据推送到任何系统，比如 MySQL、ES 
 
 - 在Regular Filter中通过定义如 _(.*)_ 方式可以得到名为 _$1_ 的变量
 - 在JSON Filter中会将 _key_ 作为变量名，如数据格式为 {'id' : 1}的一条数据，经过处理后会产生 变量名为 _id_ ,变量值为 _1_ 的变量
+- 在Split Filter中通过定义字符串切分表达式，可以将一个字符串切分成多个，分别得到名为 _$1_、_$2_ ... 的变量
 - 在Spring EL Filter中可以对变量进行逻辑运算、过滤，不满足条件的数据将被丢弃，如 #$1 == 1 or #id == 1
 - 逻辑运算使用Spring EL表达式，通过在变量前加 _#_ 号引用变量，如 _#$1_、_#id_，SpEL语法请参考 [Spring Expression Language (SpEL)](https://docs.spring.io/spring-framework/docs/4.2.x/spring-framework-reference/html/expressions.html)
 
@@ -44,6 +46,8 @@ AnyMetrics 采用插件式的设计方式，不论是数据源（DataSource）�
 | mysql               | JSON Filter       |    Prometheus     |
 | kafka               | Regular Filter    |    Open-Falcon    |
 | http                | Spring EL Filter  |    Nightingale   |
+|                 | Split Filter  |       |
+
 
 
 # 整体结构
@@ -129,7 +133,7 @@ https://github.com/open-falcon/falcon-plus/blob/master/README.md
 
 #### 4、收集规则
 ![image.png](./README-imgs/image%20(11).png)
-filters 支持 regular、SpEL、JSON 3种类型，在 regular 中使用括号的方式提取需要的变量，多个变量以 $1、$2 ... $N 的方式命名；在 el 中可以使用 _#$1 _变量用来做运算；在 JSON 中key将作为变量名称
+filters 支持 regular、el、JSON、split 4种类型，在 regular 中使用括号的方式提取需要的变量，多个变量以 $1、$2 ... $N 的方式命名；在 el 中可以使用 _#$1 _变量用来做运算；在 JSON 中key将作为变量名称在 split 中可以将一个字符串切分成多个变量，$1、$2 ... $N 的方式命名
 
 #### 5、收集器
 ![image.png](./README-imgs/image%20(12).png)
@@ -183,7 +187,7 @@ filters 支持 regular、SpEL、JSON 3种类型，在 regular 中使用括号的
 ```json
 1617953102329,operation-admin-web,10.8.60.41,RESOURCE_MYSQL_LOG,com.yxy.operation.dao.IHotBroadcastEpisodesDao.getNeedOnlineList,1,1,0,0,1
 ```
-因此第一步采用正则对数据进行提取、过滤，对应的正则为：
+因此第一步采用正则对数据进行提取、过滤（也可以使用 Split Filter，按照 "," 提取数据），对应的正则为：
 ```json
 (.*?),(.*?),(.*?),(.*?),(.*?),(.*?),(.*?),(.*?),(.*?),(.*?)
 ```

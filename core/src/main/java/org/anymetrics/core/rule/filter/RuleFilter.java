@@ -27,7 +27,7 @@ public abstract class RuleFilter {
 
     public abstract void filter();
 
-    protected Map<String, String> appendFetchDataVariable(FetchData fetchData) {
+    protected Map<String, String> initFetchDataVariable(FetchData fetchData) {
         Map<String, String> fetchDataVariable = fetchData.getFetchDataVariable() == null ? new HashMap<>() : fetchData.getFetchDataVariable();
         fetchData.setFetchDataVariable(fetchDataVariable);
         return fetchDataVariable;
@@ -41,12 +41,12 @@ public abstract class RuleFilter {
 
     protected StandardEvaluationContext appendSpELVariable(FetchData fetchData) {
         StandardEvaluationContext context = initSpELContext(fetchData);
-        for(String index : fetchData.getFetchDataVariable().keySet()) {
-            String value = fetchData.getFetchDataVariable().get(index);
+        for(String key : fetchData.getFetchDataVariable().keySet()) {
+            String value = fetchData.getFetchDataVariable().get(key);
             try {
-                context.setVariable(index, Long.parseLong(value));
+                context.setVariable(key, Long.parseLong(value));
             } catch (Exception e) {
-                context.setVariable(index, value);
+                context.setVariable(key, value);
             }
         }
         fetchData.setELContext(context);

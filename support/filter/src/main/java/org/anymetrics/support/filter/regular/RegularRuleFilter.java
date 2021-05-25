@@ -41,7 +41,7 @@ public class RegularRuleFilter extends RuleFilter {
                 // matched variable
                 // $1 $2 $3 ...
 
-                Map<String, String> fetchDataVariable = appendFetchDataVariable(fetchData);
+                Map<String, String> fetchDataVariable = initFetchDataVariable(fetchData);
 
                 int k = 1;
                 while (k <= matcher.groupCount()) {

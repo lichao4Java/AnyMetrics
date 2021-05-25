@@ -1,3 +1,4 @@
 el=org.anymetrics.support.filter.springEL.ELRuleFilter
 regular=org.anymetrics.support.filter.regular.RegularRuleFilter
 JSON=org.anymetrics.support.filter.JSON.JSONRuleFilter
+split=org.anymetrics.support.filter.split.SplitRuleFilter
