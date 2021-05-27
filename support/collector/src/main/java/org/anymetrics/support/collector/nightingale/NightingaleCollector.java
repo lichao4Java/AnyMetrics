@@ -85,39 +85,48 @@ public class NightingaleCollector extends Collector<NightingaleCollectorConfig> 
 
         NightingaleCollectorRegistry registry = new NightingaleCollectorRegistry();
 
-        PipelineTaskContext context = PipelineTaskContext.getContext();
+        try {
+            PipelineTaskContext context = PipelineTaskContext.getContext();
 
-        for(NightingaleMetricsConfig metricsConfig : collectorConfig.getMetrics()) {
+            for (NightingaleMetricsConfig metricsConfig : collectorConfig.getMetrics()) {
 
-            NightingaleMetrics.Builder builder = NightingaleMetrics.build()
-                    .counterType(metricsConfig.getCounterType())
-                    .metric(metricsConfig.getMetric())
-                    .step(step)
-                    .timestamp(System.currentTimeMillis() / 1000)
-                    .register(registry);
+                NightingaleMetrics.Builder builder = NightingaleMetrics.build()
+                        .counterType(metricsConfig.getCounterType())
+                        .metric(metricsConfig.getMetric())
+                        .step(step)
+                        .timestamp(System.currentTimeMillis() / 1000)
+                        .register(registry);
 
-            List<FetchData> fetchDatas = context.getFetchCallbackData();
+                List<FetchData> fetchDatas = context.getFetchCallbackData();
 
-            for(FetchData fetchData : fetchDatas) {
+                for (FetchData fetchData : fetchDatas) {
 
-                if(metricsConfig.getTagsMap() != null) {
-                    Map<String, String> tagsMapTemp = new HashMap<>();
-                    for(String key : metricsConfig.getTagsMap().keySet()) {
-                        tagsMapTemp.put(key , getLabel(metricsConfig.getTagsMap().get(key), fetchData));
+                    if (metricsConfig.getTagsMap() != null) {
+                        Map<String, String> tagsMapTemp = new HashMap<>();
+                        for (String key : metricsConfig.getTagsMap().keySet()) {
+                            tagsMapTemp.put(key, getLabel(metricsConfig.getTagsMap().get(key), fetchData));
+                        }
+                        builder.tagMap(tagsMapTemp);
                     }
-                    builder.tagMap(tagsMapTemp);
+
+                    builder.endpoint(metricsConfig.getEndpoint())
+                            .tags(getLabel(metricsConfig.getTags(), fetchData))
+                            //SpEL
+                            .incr(Double.valueOf(String.valueOf(getValue(metricsConfig, fetchData))));
+
+                    context.getLog().trace("nightingaleCollector source metrics : " + JSON.toJSONString(metricsConfig) + " target metrics : " + JSON.toJSONString(builder.get()));
                 }
-
-                builder.endpoint(metricsConfig.getEndpoint())
-                        .tags(getLabel(metricsConfig.getTags(), fetchData))
-                        //SpEL
-                        .incr(Double.valueOf(String.valueOf(getValue(metricsConfig, fetchData))));
-
-                context.getLog().trace("nightingaleCollector source metrics : " + JSON.toJSONString(metricsConfig) + " target metrics : " + JSON.toJSONString(builder.get()));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw e;
+        } finally {
+            try {
+                pushGateway.push(registry);
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         }
-
-        pushGateway.push(registry);
     }
 
     private String getLabel(String label, FetchData fetchData) {
