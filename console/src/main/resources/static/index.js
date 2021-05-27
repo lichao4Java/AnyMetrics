@@ -469,7 +469,7 @@ module.exports = defaults;
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_console_vue__ = __webpack_require__(63);
 /* empty harmony namespace reexport */
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_6da465c2_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_console_vue__ = __webpack_require__(211);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_d7f3cdf6_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_console_vue__ = __webpack_require__(211);
 function injectStyle (ssrContext) {
   __webpack_require__(213)
 }
@@ -489,7 +489,7 @@ var __vue_scopeId__ = null
 var __vue_module_identifier__ = null
 var Component = normalizeComponent(
   __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_console_vue__["a" /* default */],
-  __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_6da465c2_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_console_vue__["a" /* default */],
+  __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_d7f3cdf6_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_console_vue__["a" /* default */],
   __vue_template_functional__,
   __vue_styles__,
   __vue_scopeId__,
@@ -1146,6 +1146,7 @@ module.exports = function bind(fn, thisArg) {
             "metric":"metric",
             "endpoint":"endpoint",
             "tags":"tag1=a,tag=b",
+            "nid":"123456",
             "value":"1",
             "tagsMap":{"tag1","a", "tag2","b"}
         }
@@ -9629,7 +9630,7 @@ var content = __webpack_require__(171);
 if(typeof content === 'string') content = [[module.i, content, '']];
 if(content.locals) module.exports = content.locals;
 // add the styles to the DOM
-var update = __webpack_require__(214)("2d59d0f1", content, true, {});
+var update = __webpack_require__(214)("81bc5d9a", content, true, {});
 
 /***/ }),
 /* 214 */
@@ -9894,4 +9895,4 @@ module.exports = function listToStyles (parentId, list) {
 
 /***/ })
 ],[131]);
-//# sourceMappingURL=index.js.map?bdd8f7446537394b4d37
+//# sourceMappingURL=index.js.map?61fcfbfdf737ce828185

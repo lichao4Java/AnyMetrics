@@ -10,6 +10,10 @@ import org.apache.http.impl.client.HttpClientBuilder;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class NightingalePushGateway {
 
@@ -30,13 +34,68 @@ public class NightingalePushGateway {
         httpClientBuilder.setMaxConnTotal(maxConnTotal);
     }
 
+
+    /**
+     *
+     * fomart as:
+     *
+     * [
+     *     {
+     *         "metric": "disk.io.util",
+     *         "endpoint": "10.86.12.13",
+     *         "tags": "device=sda",
+     *         "value": 15.4,
+     *         "timestamp": 1554455574,
+     *         "step": 20
+     *     },
+     *     {
+     *         "metric": "api.latency",
+     *         "endpoint": "10.86.12.13",
+     *         "tags": "api=/api/v1/auth/login,srv=n9e,mod=monapi,idc=bj",
+     *         "value": 5.4,
+     *         "timestamp": 1554455574,
+     *         "step": 20
+     *     }
+     * ]
+     */
+    public String format(NightingaleCollectorRegistry registry) {
+        List<Map<String, Object>> metricsMap = new ArrayList<>();
+        List<NightingaleMetrics> registerMetrics = registry.getRegisterMetrics();
+        for(NightingaleMetrics metrics : registerMetrics) {
+            Map<List<String>, NightingaleMetrics.Child> childrens = metrics.getChildren();
+            for(List<String> key : childrens.keySet()) {
+                Map<String, Object> metric = new HashMap<>();
+                metric.put("metric", metrics.getMetric());
+                metric.put("endpoint", metrics.getMetric());
+                metric.put("timestamp", metrics.getTimestamp());
+                metric.put("step", metrics.getStep());
+                metric.put("nid", metrics.getNid());
+
+                StringBuffer tags = new StringBuffer();
+                NightingaleMetrics.Child child = childrens.get(key);
+                List<String> keyNames = child.getKeyNames();
+                for(int i = 0; i < keyNames.size(); i ++) {
+                    tags.append(",").append(keyNames.get(i)).append("=").append(child.getKeyValues().get(i));
+                }
+                metric.put("tags", tags.toString().replaceFirst(",", ""));
+                metric.put("value", child.getValue());
+                metricsMap.add(metric);
+            }
+        }
+        return JSON.toJSONString(metricsMap);
+    }
+
     public void push(NightingaleCollectorRegistry registry) {
 
         PipelineTaskContext context = PipelineTaskContext.getContext();
 
+        String content = format(registry);
+
+        context.getLog().trace("nightingaleCollector push content : " + content);
+
         HttpPost httpPost = new HttpPost(url);
         httpPost.setHeader("Content-Type", "application/json");
-        httpPost.setEntity(new StringEntity(JSON.toJSONString(registry.getRegisterMetrics()), Charset.forName("UTF-8")));
+        httpPost.setEntity(new StringEntity(content, Charset.forName("UTF-8")));
 
         CloseableHttpResponse response = null;
         CloseableHttpClient httpClient = null;

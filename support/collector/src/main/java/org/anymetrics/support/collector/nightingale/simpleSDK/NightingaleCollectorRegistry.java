@@ -23,4 +23,5 @@ public class NightingaleCollectorRegistry {
     public List<NightingaleMetrics> getRegisterMetrics() {
         return registerMetrics;
     }
+
 }

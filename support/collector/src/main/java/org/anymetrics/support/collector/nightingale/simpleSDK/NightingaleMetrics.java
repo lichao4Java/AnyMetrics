@@ -2,8 +2,9 @@ package org.anymetrics.support.collector.nightingale.simpleSDK;
 
 
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.DoubleAdder;
 
 public class NightingaleMetrics {
@@ -24,19 +25,9 @@ public class NightingaleMetrics {
     private String endpoint;
 
     /**
-     * 监控数据的属性标签
+     * nid
      */
-    private String tags;
-
-    /**
-     * 监控指标的当前值
-     */
-    private DoubleAdder value = new DoubleAdder();
-
-    /**
-     * tags字段如果不想使用上面的字符串拼接方式，可以使用tagsMap字段
-     */
-    private Map<String, String> tagsMap;
+    private String nid;
 
     /**
      * 监控数据的上报周期
@@ -47,6 +38,9 @@ public class NightingaleMetrics {
      * 当前时间戳
      */
     private Long timestamp;
+
+
+    protected final ConcurrentMap<List<String>, Child> children = new ConcurrentHashMap();
 
     public String getCounterType() {
         return counterType;
@@ -72,26 +66,6 @@ public class NightingaleMetrics {
         this.endpoint = endpoint;
     }
 
-    public String getTags() {
-        return tags;
-    }
-
-    public void setTags(String tags) {
-        this.tags = tags;
-    }
-
-    public Double getValue() {
-        return value.doubleValue();
-    }
-
-    public Map<String, String> getTagsMap() {
-        return tagsMap;
-    }
-
-    public void setTagsMap(Map<String, String> tagsMap) {
-        this.tagsMap = tagsMap;
-    }
-
     public Integer getStep() {
         return step;
     }
@@ -106,6 +80,18 @@ public class NightingaleMetrics {
 
     public void setTimestamp(Long timestamp) {
         this.timestamp = timestamp;
+    }
+
+    public void setNid(String nid) {
+        this.nid = nid;
+    }
+
+    public String getNid() {
+        return nid;
+    }
+
+    public ConcurrentMap<List<String>, Child> getChildren() {
+        return children;
     }
 
     public static Builder build() {
@@ -135,9 +121,25 @@ public class NightingaleMetrics {
             return this;
         }
 
-        public Builder tags(String tags) {
-            metrics.tags = tags;
-            return this;
+        public Child tags(String tags) {
+            if(tags == null) {
+                throw new IllegalArgumentException("tags can not be null");
+            }
+            List<String> keys = new ArrayList<>();
+            List<String> values = new ArrayList<>();
+            String[] kvs = tags.split(",");
+            if(kvs.length == 0) {
+                throw new IllegalArgumentException("tags format must be key=value,key=value");
+            }
+            for(String kv : kvs) {
+                String[] tag = kv.split("=");
+                if(tag.length != 2) {
+                    throw new IllegalArgumentException("tag format must be key=value");
+                }
+                keys.add((tag[0]));
+                values.add(tag[1]);
+            }
+            return getChild(keys, values);
         }
 
         public Builder step(Integer step) {
@@ -145,23 +147,22 @@ public class NightingaleMetrics {
             return this;
         }
 
-        public Builder incr(Double value) {
-            metrics.value.add(value);
-            return this;
-        }
-
-        public Builder tagMap(String key, String value) {
-            metrics.tagsMap.put(key, value);
-            return this;
-        }
-
-        public Builder tagMap(Map<String, String> tagsMap) {
-            metrics.tagsMap = tagsMap;
-            return this;
+        public Child tagMap(LinkedHashMap<String, String> tagsMap) {
+            if(tagsMap == null) {
+                throw new IllegalArgumentException("tagsMap can not be null");
+            }
+            List<String> keys = Arrays.asList(tagsMap.keySet().toArray(new String[]{}));
+            List<String> values = Arrays.asList(tagsMap.values().toArray(new String[]{}));
+            return getChild(keys, values);
         }
 
         public Builder timestamp(long timestamp) {
             metrics.timestamp = timestamp;
+            return this;
+        }
+
+        public Builder nid(String nid) {
+            metrics.nid = nid;
             return this;
         }
 
@@ -174,7 +175,57 @@ public class NightingaleMetrics {
             return metrics;
         }
 
+        private Child getChild(List<String> keys, List<String> values) {
+            Child child = metrics.getChildren().get(values);
+            if(child == null) {
+                child = new Child(keys, values);
+                metrics.getChildren().putIfAbsent(values, child);
+                return child;
+            }
+            return child;
+        }
+    }
 
+    public static class Child {
+
+        /**
+         * key=value 监控指标的当前值
+         */
+        private DoubleAdder value = new DoubleAdder();
+
+        /**
+         * key1
+         * key2
+         */
+        private List<String> keyNames;
+
+        /**
+         * value1
+         * value2
+         */
+        private List<String> keyValues;
+
+        public Child(List<String> keyNames, List<String> keyValues) {
+            this.keyNames = keyNames;
+            this.keyValues = keyValues;
+        }
+
+        public Child incr(Double v) {
+            value.add(v);
+            return this;
+        }
+
+        public double getValue() {
+            return value.sum();
+        }
+
+        public List<String> getKeyNames() {
+            return keyNames;
+        }
+
+        public List<String> getKeyValues() {
+            return keyValues;
+        }
     }
 
 }

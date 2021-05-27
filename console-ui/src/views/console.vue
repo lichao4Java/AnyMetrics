@@ -370,6 +370,7 @@ nightingale: `{
             "metric":"metric",
             "endpoint":"endpoint",
             "tags":"tag1=a,tag=b",
+            "nid":"123456",
             "value":"1",
             "tagsMap":{"tag1","a", "tag2","b"}
         }

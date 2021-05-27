@@ -1,6 +1,5 @@
 package org.anymetrics.support.collector.nightingale;
 
-import com.alibaba.fastjson.JSON;
 import org.anymetrics.core.collector.Collector;
 import org.anymetrics.core.datasource.callback.FetchData;
 import org.anymetrics.core.rule.BoundedRuleConfig;
@@ -15,7 +14,7 @@ import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.util.StringUtils;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -95,6 +94,8 @@ public class NightingaleCollector extends Collector<NightingaleCollectorConfig> 
                         .metric(metricsConfig.getMetric())
                         .step(step)
                         .timestamp(System.currentTimeMillis() / 1000)
+                        .nid(metricsConfig.getNid())
+                        .endpoint(metricsConfig.getEndpoint())
                         .register(registry);
 
                 List<FetchData> fetchDatas = context.getFetchCallbackData();
@@ -102,19 +103,19 @@ public class NightingaleCollector extends Collector<NightingaleCollectorConfig> 
                 for (FetchData fetchData : fetchDatas) {
 
                     if (metricsConfig.getTagsMap() != null) {
-                        Map<String, String> tagsMapTemp = new HashMap<>();
+                        LinkedHashMap<String, String> tagsMapTemp = new LinkedHashMap<>();
                         for (String key : metricsConfig.getTagsMap().keySet()) {
                             tagsMapTemp.put(key, getLabel(metricsConfig.getTagsMap().get(key), fetchData));
                         }
-                        builder.tagMap(tagsMapTemp);
+                        builder.tagMap(tagsMapTemp)
+                                //SpEL
+                                .incr(Double.valueOf(String.valueOf(getValue(metricsConfig, fetchData))));
+                    } else {
+                        builder.tags(getLabel(metricsConfig.getTags(), fetchData))
+                                //SpEL
+                                .incr(Double.valueOf(String.valueOf(getValue(metricsConfig, fetchData))));
                     }
 
-                    builder.endpoint(metricsConfig.getEndpoint())
-                            .tags(getLabel(metricsConfig.getTags(), fetchData))
-                            //SpEL
-                            .incr(Double.valueOf(String.valueOf(getValue(metricsConfig, fetchData))));
-
-                    context.getLog().trace("nightingaleCollector source metrics : " + JSON.toJSONString(metricsConfig) + " target metrics : " + JSON.toJSONString(builder.get()));
                 }
             }
         } catch (Exception e) {

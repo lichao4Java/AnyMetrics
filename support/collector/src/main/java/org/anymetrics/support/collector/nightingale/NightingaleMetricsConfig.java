@@ -14,6 +14,8 @@ public class NightingaleMetricsConfig {
      */
     private String metric;
 
+    private String nid;
+
     /**
      * 监控实体
      */
@@ -35,6 +37,14 @@ public class NightingaleMetricsConfig {
      */
     private Map<String, String> tagsMap;
 
+
+    public void setNid(String nid) {
+        this.nid = nid;
+    }
+
+    public String getNid() {
+        return nid;
+    }
 
     public String getCounterType() {
         return counterType;
