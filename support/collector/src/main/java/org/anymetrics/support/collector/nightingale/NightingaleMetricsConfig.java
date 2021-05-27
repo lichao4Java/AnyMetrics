@@ -1,6 +1,6 @@
 package org.anymetrics.support.collector.nightingale;
 
-import java.util.Map;
+import java.util.LinkedHashMap;
 
 public class NightingaleMetricsConfig {
 
@@ -35,7 +35,7 @@ public class NightingaleMetricsConfig {
     /**
      * tags字段如果不想使用上面的字符串拼接方式，可以使用tagsMap字段
      */
-    private Map<String, String> tagsMap;
+    private LinkedHashMap<String, String> tagsMap;
 
 
     public void setNid(String nid) {
@@ -86,11 +86,11 @@ public class NightingaleMetricsConfig {
         this.value = value;
     }
 
-    public Map<String, String> getTagsMap() {
+    public LinkedHashMap<String, String> getTagsMap() {
         return tagsMap;
     }
 
-    public void setTagsMap(Map<String, String> tagsMap) {
+    public void setTagsMap(LinkedHashMap<String, String> tagsMap) {
         this.tagsMap = tagsMap;
     }
 }
