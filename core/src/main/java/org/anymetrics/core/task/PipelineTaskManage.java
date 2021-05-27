@@ -142,8 +142,8 @@ public class PipelineTaskManage {
         for(PipelineTask task : tasks) {
             if(deplay) {
                 try {
-                    //延时 1 到 10秒启动
-                    Thread.sleep((long)(new Random().nextInt(9000)) + 1000);
+                    //延时 1 到 5秒启动
+                    Thread.sleep((long)(new Random().nextInt(4000)) + 1000);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
