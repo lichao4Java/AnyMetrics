@@ -2,10 +2,10 @@
 
 ![image.png](./README-imgs/logo.png)
 
-AnyMetrics - 面向开发人员、声明式的 Metrics 采集与监控系统，可以对结构化与非结构化、有界数据与无界数据进行采集，通过对采集数据进行提取、过滤、逻辑运算等处理后将结果存储流行的监控系统或存储引擎中（如 Prometheus、Nightingale、Open-Falcon等）从而搭建起完整的监控体系，同时也可以结合 grafana 完成对数据的可视化
+AnyMetrics - 面向开发人员、声明式的 Metrics 采集与监控系统，可以对结构化与非结构化、有界数据与无界数据进行采集，通过对采集数据进行提取、过滤、逻辑运算、聚合等处理后将结果存储流行的监控系统或存储引擎中（如 Prometheus、Nightingale、Open-Falcon等）从而搭建起完整的监控体系，同时也可以结合 grafana 完成对数据的可视化
 
 
-数据的采集、提取、过滤、存储等均以配置的方式驱动，无需额外的开发，对应到 AnyMetrics 中分别是对数据源（DataSource）、收集规则（Filter）、收集器（Collector）进行配置，基于这些配置 AnyMetrics 会以管道的方式自动完成从数据采集到数据存储的全部工作
+数据的采集、提取、过滤、聚合、存储等均以配置的方式驱动，无需额外的开发，对应到 AnyMetrics 中分别是对数据源（DataSource）、收集规则（Filter）、收集器（Collector）进行配置，基于这些配置 AnyMetrics 会以管道的方式自动完成从数据采集到数据存储的全部工作
 
 对于有界数据的任务，AnyMetrics 会以固定的频率从数据源中拉取数据，AnyMetrics 中内置了 MySQL 类型的有数据源，对于无界数据的任务，AnyMetrics 会以一个时间窗口为时间单位从数据源中批量拉取数据，AnyMetrics 中内置了 Kafka 类型的无界数据源
 
@@ -88,7 +88,7 @@ https://github.com/open-falcon/falcon-plus/blob/master/README.md
 
 # 启动
 
-**启动 AnyMeitris**
+**启动 AnyMetrics**
 ```jshelllanguage
 1 mvn clean package
 2 cd boot/target
@@ -183,7 +183,7 @@ filters 支持 regular、el、JSON、split 4种类型，在 regular 中使用括
 #### 2、设置收集规则
 
 
-调用日志是结构化的数据，如：
+假设调用链日志是以下这种结构化的数据，如：
 ```json
 1617953102329,operation-admin-web,10.8.60.41,RESOURCE_MYSQL_LOG,com.yxy.operation.dao.IHotBroadcastEpisodesDao.getNeedOnlineList,1,1,0,0,1
 ```
@@ -335,7 +335,7 @@ filters 支持 regular、el、JSON、split 4种类型，在 regular 中使用括
 }
 ```
 #### 3、设置收集器
-把数据收集到 promethus 中，value 为 #count
+把数据收集到 promethus 中，value 为 #total
 ```json
 {
     "pushGateway": "192.168.0.1:9091",
@@ -344,7 +344,7 @@ filters 支持 regular、el、JSON、split 4种类型，在 regular 中使用括
             "help": "anymetrics_member_count",
             "name": "anymetrics_member_count",
             "type": "gauge",
-            "value": "#count"
+            "value": "#total"
         }
     ],
     "type": "prometheus",
