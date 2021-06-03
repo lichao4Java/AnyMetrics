@@ -179,8 +179,8 @@ public class NightingaleMetrics {
             Child child = metrics.getChildren().get(values);
             if(child == null) {
                 child = new Child(keys, values);
-                metrics.getChildren().putIfAbsent(values, child);
-                return child;
+                Child child2 = metrics.getChildren().putIfAbsent(values, child);
+                return child2 == null ? child : child2;
             }
             return child;
         }

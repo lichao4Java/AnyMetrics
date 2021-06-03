@@ -9,7 +9,7 @@ AnyMetrics - 面向开发人员、声明式的 Metrics 采集与监控系统，�
 
 对于有界数据的任务，AnyMetrics 会以固定的频率从数据源中拉取数据，AnyMetrics 中内置了 MySQL 类型的有数据源，对于无界数据的任务，AnyMetrics 会以一个时间窗口为时间单位从数据源中批量拉取数据，AnyMetrics 中内置了 Kafka 类型的无界数据源
 
-AnyMetrics 的数据源可以是任何系统，比如可以把 HTTP 请求结果当作数据源、也可以把 ES 的检索结果当作数据源，，只需要拓展一个相应的数据源插件即可
+AnyMetrics 的数据源可以是任何系统，比如可以把 HTTP 请求结果当作数据源、也可以把 ES 的检索结果当作数据源，只需要拓展一个相应的数据源插件即可
 
 通过对数据源的原始数据进行提取和过滤可以完成从非结构数据变成结构化数据的目的，AnyMetrics 中内置了JSON、正则表达式、Split 和 Spring EL 表达式4种数据过滤规则（Filter）
 
