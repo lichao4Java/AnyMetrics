@@ -125,9 +125,9 @@ public class JSONRuleFilter extends RuleFilter {
      * 转化成Map后的结果为:
      * {
      *     "a":"1",
-     *     "b_c":"2",
-     *     "d_0_e":"3",
-     *     "d_0_f":"f",
+     *     "b.c":"2",
+     *     "d.0.e":"3",
+     *     "d.0.f":"f",
      *     "g":"g"
      * }
      *
@@ -136,7 +136,11 @@ public class JSONRuleFilter extends RuleFilter {
      * @param jsonObject
      */
     private void initFetchDataVariable(Map<String, String> fetchDataVariable, String parentKey, JSONObject jsonObject) {
+
         for(String key : jsonObject.keySet()) {
+
+            String nodeKey = parentKey == null ? key : parentKey + "." + key;
+
             Object o = jsonObject.get(key);
             if(o instanceof JSONObject) {
                 initFetchDataVariable(fetchDataVariable, key, (JSONObject) o);
@@ -144,11 +148,15 @@ public class JSONRuleFilter extends RuleFilter {
             else if(o instanceof JSONArray) {
                 JSONArray a = (JSONArray) o;
                 for(int i = 0; i < a.size(); i ++) {
-                    initFetchDataVariable(fetchDataVariable, key + '_' + i , a.getJSONObject(i));
+                    if(a.get(i) instanceof JSONObject) {
+                        initFetchDataVariable(fetchDataVariable, key + '.' + i , a.getJSONObject(i));
+                    } else {
+                        fetchDataVariable.put(nodeKey + "." + i , a.getString(i));
+                    }
                 }
             }
             else {
-                fetchDataVariable.put(parentKey == null ? key : parentKey + "." + key, jsonObject.getString(key));
+                fetchDataVariable.put(nodeKey, jsonObject.getString(key));
             }
         }
     }
