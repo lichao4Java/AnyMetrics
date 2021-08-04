@@ -283,7 +283,7 @@ export default {
       ruleKindTypes :[{value : 'schedule', label :'有界数据'},{value : 'stream', label :'无界数据'}],
       streamDataSourceTypes :[{value : 'kafka', label :'kafka'}],
       scheduleDataSourceTypes :[{value : 'mysql', label :'mysql'}, {value : 'simpleHTTP', label :'simpleHTTP'}],
-      collectorTypes :[{value : 'prometheus', label :'prometheus'}, {value : 'nightingale', label :'nightingale'},{value : 'openfalcon', label :'openfalcon'}],
+      collectorTypes :[{value : 'prometheus', label :'prometheus'}, {value : 'nightingale', label :'nightingale'},{value : 'openfalcon', label :'openfalcon'}, {value : 'loki', label :'loki'}],
       dataSourceConfigTemp : {
         mysql: `
 {
@@ -388,6 +388,16 @@ openfalcon: `{
             "value":"1"
        }
     ]
+}`,
+loki: `{
+    "type":"loki",
+    "serverAddr":"ip:port",
+    "streams":{
+            "stream" : {
+              "lable":"value"
+            },
+            "value" : ""
+       }
 }`
       
       }
@@ -534,7 +544,7 @@ openfalcon: `{
       })
     },
     handleAddAndStartTask(){
-      addAndStartTask({'newTaskJsonConfig' : this.getTempJSON()}()).then(response => {
+      addAndStartTask({'newTaskJsonConfig' : this.getTempJSON()}).then(response => {
         this.getList()
         this.settingDialog = false
         this.$notify({
