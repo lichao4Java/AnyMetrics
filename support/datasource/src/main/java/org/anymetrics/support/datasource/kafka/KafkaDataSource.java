@@ -23,8 +23,7 @@ public class KafkaDataSource extends TimeWindowUnBoundedDataSource<KafkaDataSour
     /**
      * kafka consumer poll interval
      */
-    private static int pollInterval = Integer.parseInt(System.getProperty("kafkaPollInterval", "2000"));
-
+    private int pollTimeoutMs = 2000;
 
     @Override
     public void connect() {
@@ -35,6 +34,21 @@ public class KafkaDataSource extends TimeWindowUnBoundedDataSource<KafkaDataSour
 
         KafkaDataSourceConfig dataSourceConfig = getDataSourceConfig();
 
+        pollTimeoutMs = dataSourceConfig.getPollTimeoutMs() == null ? pollTimeoutMs : dataSourceConfig.getPollTimeoutMs();
+
+        if(dataSourceConfig.getWorkCorePoolsize() != null) {
+            super.setWorkCorePoolSize(dataSourceConfig.getWorkCorePoolsize());
+        }
+        if(dataSourceConfig.getWorkMaxPoolsize() != null) {
+            super.setWorkMaxPoolSize(dataSourceConfig.getWorkMaxPoolsize());
+        }
+        if(dataSourceConfig.getWorkKeepAliveTime() != null) {
+            super.setWorkKeepAliveTime(dataSourceConfig.getWorkKeepAliveTime());
+        }
+        if(dataSourceConfig.getWorkCapacity() != null) {
+            super.setWorkCapacity(dataSourceConfig.getWorkCapacity());
+        }
+
         Properties props = new Properties();
         props.setProperty("bootstrap.servers", dataSourceConfig.getKafkaAddress());
         props.setProperty("group.id", dataSourceConfig.getGroupId());
@@ -44,9 +58,8 @@ public class KafkaDataSource extends TimeWindowUnBoundedDataSource<KafkaDataSour
         props.setProperty("value.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
 
         consumer = new KafkaConsumer<>(props);
+
         consumer.subscribe(Arrays.asList(dataSourceConfig.getTopic()));
-
-
 
     }
 
@@ -66,7 +79,7 @@ public class KafkaDataSource extends TimeWindowUnBoundedDataSource<KafkaDataSour
     public List<Object> poll() {
 
         List<Object> fetchData = new ArrayList<>();
-        ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(pollInterval));
+        ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(pollTimeoutMs));
         for (ConsumerRecord<String, String> record : records) {
             fetchData.add(record.value());
         }

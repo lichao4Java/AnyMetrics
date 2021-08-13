@@ -27,6 +27,14 @@ public abstract class TimeWindowUnBoundedDataSource<T extends DataSourceConfig, 
 
     private ExecutorService bossExecutorService = newBossExecutorService();
 
+    private int workCorePoolSize = nThreads / 2;
+
+    private int workMaxPoolSize = nThreads;
+
+    private long workKeepAliveTime = 100L;
+
+    private int workCapacity = Integer.MAX_VALUE;
+
     private ExecutorService newBossExecutorService() {
 
         return Executors.newSingleThreadExecutor(new ThreadFactory() {
@@ -45,9 +53,9 @@ public abstract class TimeWindowUnBoundedDataSource<T extends DataSourceConfig, 
 
     private ExecutorService newWorkExecutorService() {
 
-       return new ThreadPoolExecutor(nThreads / 2, nThreads,
-               100L, TimeUnit.MILLISECONDS,
-               new LinkedBlockingQueue<Runnable>(),
+       return new ThreadPoolExecutor(workCorePoolSize, workMaxPoolSize,
+               workKeepAliveTime, TimeUnit.MILLISECONDS,
+               new LinkedBlockingQueue<Runnable>(workCapacity),
                new ThreadFactory() {
 
                    @Override
@@ -69,6 +77,8 @@ public abstract class TimeWindowUnBoundedDataSource<T extends DataSourceConfig, 
     @Override
     public void connect() {
     }
+
+
 
     @Override
     public void destory() {
@@ -190,5 +200,21 @@ public abstract class TimeWindowUnBoundedDataSource<T extends DataSourceConfig, 
             }
         });
 
+    }
+
+    public void setWorkCapacity(int workCapacity) {
+        this.workCapacity = workCapacity;
+    }
+
+    public void setWorkCorePoolSize(int workCorePoolSize) {
+        this.workCorePoolSize = workCorePoolSize;
+    }
+
+    public void setWorkMaxPoolSize(int workMaxPoolSize) {
+        this.workMaxPoolSize = workMaxPoolSize;
+    }
+
+    public void setWorkKeepAliveTime(long workKeepAliveTime) {
+        this.workKeepAliveTime = workKeepAliveTime;
     }
 }

@@ -11,6 +11,32 @@ public class KafkaDataSourceConfig extends DataSourceConfig {
 
     private String groupId;
 
+    private Integer workCorePoolsize;
+
+    private Integer workMaxPoolsize;
+
+    private Long workKeepAliveTime;
+
+    private Integer workCapacity;
+
+    private Integer pollTimeoutMs;
+
+    public void setWorkCapacity(Integer workCapacity) {
+        this.workCapacity = workCapacity;
+    }
+
+    public Integer getWorkCapacity() {
+        return workCapacity;
+    }
+
+    public void setPollTimeoutMs(Integer pollTimeoutMs) {
+        this.pollTimeoutMs = pollTimeoutMs;
+    }
+
+    public Integer getPollTimeoutMs() {
+        return pollTimeoutMs;
+    }
+
     public String getKafkaAddress() {
         return kafkaAddress;
     }
@@ -33,5 +59,29 @@ public class KafkaDataSourceConfig extends DataSourceConfig {
 
     public void setGroupId(String groupId) {
         this.groupId = groupId;
+    }
+
+    public Integer getWorkCorePoolsize() {
+        return workCorePoolsize;
+    }
+
+    public void setWorkCorePoolsize(Integer workCorePoolsize) {
+        this.workCorePoolsize = workCorePoolsize;
+    }
+
+    public Integer getWorkMaxPoolsize() {
+        return workMaxPoolsize;
+    }
+
+    public void setWorkMaxPoolsize(Integer workMaxPoolsize) {
+        this.workMaxPoolsize = workMaxPoolsize;
+    }
+
+    public Long getWorkKeepAliveTime() {
+        return workKeepAliveTime;
+    }
+
+    public void setWorkKeepAliveTime(Long workKeepAliveTime) {
+        this.workKeepAliveTime = workKeepAliveTime;
     }
 }
