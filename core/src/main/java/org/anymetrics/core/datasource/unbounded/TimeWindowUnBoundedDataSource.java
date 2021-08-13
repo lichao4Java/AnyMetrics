@@ -25,7 +25,7 @@ public abstract class TimeWindowUnBoundedDataSource<T extends DataSourceConfig, 
 
     private static final int nThreads = Runtime.getRuntime().availableProcessors();
 
-    private ExecutorService bossExecutorService = newBossExecutorService();
+    private ExecutorService bossExecutorService;
 
     private int workCorePoolSize = nThreads / 2;
 
@@ -48,7 +48,7 @@ public abstract class TimeWindowUnBoundedDataSource<T extends DataSourceConfig, 
         });
     }
 
-    private ExecutorService workExecutorService = newWorkExecutorService();
+    private ExecutorService workExecutorService;
 
 
     private ExecutorService newWorkExecutorService() {
@@ -122,6 +122,10 @@ public abstract class TimeWindowUnBoundedDataSource<T extends DataSourceConfig, 
 
     private void startBossThread(UnboundedRuleConfig ruleConfig, FetchCallback callback) {
 
+        if(bossExecutorService == null) {
+            bossExecutorService =  newBossExecutorService();
+        }
+
         PipelineTaskContext context = PipelineTaskContext.getContext();
 
         running.set(true);
@@ -169,6 +173,10 @@ public abstract class TimeWindowUnBoundedDataSource<T extends DataSourceConfig, 
 
 
     private void dispatchWorkThread(PipelineTaskContext context, FetchCallback callback, List<Object> fetchData) {
+
+        if(workExecutorService == null) {
+            workExecutorService = newWorkExecutorService();
+        }
 
         ArrayList<Object> fetchDataTemp = new ArrayList<>(fetchData);
         fetchData.clear();

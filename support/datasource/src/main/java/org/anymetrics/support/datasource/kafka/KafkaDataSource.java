@@ -1,8 +1,10 @@
 package org.anymetrics.support.datasource.kafka;
 
 
+import org.anymetrics.core.datasource.DataSourceConfig;
 import org.anymetrics.core.datasource.unbounded.TimeWindowUnBoundedDataSource;
 import org.anymetrics.core.rule.UnboundedRuleConfig;
+import org.anymetrics.core.task.PipelineTaskContext;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
@@ -24,6 +26,7 @@ public class KafkaDataSource extends TimeWindowUnBoundedDataSource<KafkaDataSour
      * kafka consumer poll interval
      */
     private int pollTimeoutMs = 2000;
+
 
     @Override
     public void connect() {
